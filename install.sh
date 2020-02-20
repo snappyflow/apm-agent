@@ -33,7 +33,7 @@ enabled=1
 EOF
 yum install -y td-agent-bit wget
 systemctl enable td-agent-bit
-systemctl start td-agent-bit
+# systemctl start td-agent-bit
 fi
 
 }
@@ -51,12 +51,16 @@ curl -sL $RELEASEURL \
 ls -l sfagent* checksum*
 tar -zxvf sfagent*linux_$ARCH.tar.gz sfagent
 mkdir -p $AGENTDIR
+mkdir -p $AGENTDIR/mappings
 mv sfagent $AGENTDIR
+mv *_mapping.yaml $AGENTDIR/mappings
+mv services.yaml $AGENTDIR/mappings
+mv config.yaml.sample $AGENTDIR/config.yaml
 
 cat > /etc/systemd/system/sfagent-config.service <<EOF
 [Unit]
 Description=snappyflow apm service
-ConditionPathExists=!$AGENTDIR/config.yaml
+ConditionPathExists=!$AGENTDIR/config.yaml.gen
 After=network.target
  
 [Service]
@@ -65,7 +69,7 @@ Type=oneshot
 WorkingDirectory=$AGENTDIR
 ExecStartPre=/bin/mkdir -p /var/log/sfagent
 ExecStartPre=/bin/chmod 755 /var/log/sfagent
-ExecStart=$AGENTDIR/sfagent -generate-config -file-name $AGENTDIR/config.yaml
+ExecStart=$AGENTDIR/sfagent -generate-config -file-name $AGENTDIR/config.yaml.gen
 
 StandardOutput=syslog
 StandardError=syslog
@@ -103,7 +107,7 @@ systemctl daemon-reload
 systemctl enable sfagent-config
 systemctl start sfagent-config
 systemctl enable sfagent
-systemctl start sfagent
+# systemctl start sfagent
 
 }
 
