@@ -42,7 +42,7 @@ install_apm_agent()
 {
 
 ARCH=`uname -m`
-rm -rf checksum* sfagent* mappings
+rm -rf checksum* sfagent* mappings $AGENTDIR
 curl -sL $RELEASEURL \
 | grep -w "browser_download_url" \
 | cut -d":" -f 2,3 \
