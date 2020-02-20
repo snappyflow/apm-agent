@@ -42,19 +42,18 @@ install_apm_agent()
 {
 
 ARCH=`uname -m`
-rm -rf checksum* sfagent*
+rm -rf checksum* sfagent* mappings
 curl -sL $RELEASEURL \
 | grep -w "browser_download_url" \
 | cut -d":" -f 2,3 \
 | tr -d '"' \
 | xargs wget -q 
 ls -l sfagent* checksum*
-tar -zxvf sfagent*linux_$ARCH.tar.gz sfagent
+tar -zxvf sfagent*linux_$ARCH.tar.gz
 mkdir -p $AGENTDIR
 mkdir -p $AGENTDIR/mappings
 mv sfagent $AGENTDIR
-mv *_mapping.yaml $AGENTDIR/mappings
-mv services.yaml $AGENTDIR/mappings
+mv mappings $AGENTDIR/.
 mv config.yaml.sample $AGENTDIR/config.yaml
 
 cat > /etc/systemd/system/sfagent-config.service <<EOF
@@ -105,8 +104,8 @@ EOF
 
 systemctl daemon-reload
 systemctl enable sfagent-config
-systemctl start sfagent-config
 systemctl enable sfagent
+systemctl start sfagent-config
 # systemctl start sfagent
 
 }
