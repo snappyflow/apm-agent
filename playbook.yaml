@@ -1,0 +1,17 @@
+---
+- name: install sfagent
+  become: yes
+  hosts: all
+  tasks:
+  - name: Transfer install.sh script
+    copy: src=install.sh dest=/tmp/install.sh mode=0777
+
+  - name: Execute install.sh
+    command: /tmp/install.sh
+  
+  # by default install.sh donot start sfagent uncomment below lines to start agent
+  # - name: start sfagent
+  #   service:
+  #     name: sfagent
+  #     state: started
+  #     enabled: yes

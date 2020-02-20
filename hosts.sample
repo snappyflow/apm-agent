@@ -1,0 +1,3 @@
+[all]
+centos ansible_host=10.81.1.220 ansible_ssh_user=centos
+ubuntu ansible_host=10.81.1.143 ansible_ssh_user=ubuntu
