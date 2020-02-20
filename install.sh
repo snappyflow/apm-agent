@@ -59,7 +59,7 @@ mv config.yaml.sample $AGENTDIR/config.yaml
 cat > /etc/systemd/system/sfagent-config.service <<EOF
 [Unit]
 Description=snappyflow apm service
-ConditionPathExists=!$AGENTDIR/config.yaml.gen
+ConditionPathExists=$AGENTDIR/generated-config.yaml
 After=network.target
  
 [Service]
@@ -68,7 +68,7 @@ Type=oneshot
 WorkingDirectory=$AGENTDIR
 ExecStartPre=/bin/mkdir -p /var/log/sfagent
 ExecStartPre=/bin/chmod 755 /var/log/sfagent
-ExecStart=$AGENTDIR/sfagent -generate-config -file-name $AGENTDIR/config.yaml.gen
+ExecStart=$AGENTDIR/sfagent -generate-config -file-name $AGENTDIR/generated-config.yaml
 
 StandardOutput=syslog
 StandardError=syslog
