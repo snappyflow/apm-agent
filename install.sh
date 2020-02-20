@@ -59,7 +59,7 @@ mv config.yaml.sample $AGENTDIR/config.yaml
 cat > /etc/systemd/system/sfagent-config.service <<EOF
 [Unit]
 Description=snappyflow apm service
-ConditionPathExists=$AGENTDIR/generated-config.yaml
+ConditionPathExists=!$AGENTDIR/generated-config.yaml
 After=network.target
  
 [Service]
