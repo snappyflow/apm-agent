@@ -52,8 +52,10 @@ ls -l sfagent* checksum*
 tar -zxvf sfagent*linux_$ARCH.tar.gz
 mkdir -p $AGENTDIR
 mkdir -p $AGENTDIR/mappings
+mkdir -p $AGENTDIR/scripts
 mv sfagent $AGENTDIR
 mv mappings $AGENTDIR/.
+mv scripts $AGENTDIR/.
 mv config.yaml.sample $AGENTDIR/config.yaml
 
 cat > /etc/systemd/system/sfagent-config.service <<EOF
