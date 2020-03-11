@@ -54,6 +54,7 @@ mkdir -p $AGENTDIR
 mkdir -p $AGENTDIR/mappings
 mkdir -p $AGENTDIR/scripts
 mv sfagent $AGENTDIR
+mv jolokia.jar $AGENTDIR
 mv mappings $AGENTDIR/.
 mv scripts $AGENTDIR/.
 mv config.yaml.sample $AGENTDIR/config.yaml
