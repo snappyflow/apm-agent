@@ -57,7 +57,7 @@ mv sfagent $AGENTDIR
 mv jolokia.jar $AGENTDIR
 mv mappings $AGENTDIR/.
 mv scripts $AGENTDIR/.
-mv config.yaml.sample $AGENTDIR/config.yaml
+mv config.yaml.sample $AGENTDIR/config.yaml.sample
 
 cat > /etc/systemd/system/sfagent-config.service <<EOF
 [Unit]
