@@ -41,25 +41,33 @@ fi
 upgrade_apm_agent()
 {
 
-ARCH=`uname -m`
-echo "Backingup config.yaml"
-cp -f $AGENTDIR/config.yaml _config_backup.yaml
-rm -rf checksum* sfagent* mappings
-curl -sL $RELEASEURL \
-| grep -w "browser_download_url" \
-| cut -d":" -f 2,3 \
-| tr -d '"' \
-| xargs wget -q 
-ls -l sfagent* checksum*
-tar -zxvf sfagent*linux_$ARCH.tar.gz
-mv -f sfagent $AGENTDIR
-mv -f jolokia.jar $AGENTDIR
-mv -f mappings/* $AGENTDIR/mappings/
-mv -f scripts/* $AGENTDIR/scripts/
-mv -f config.yaml.sample $AGENTDIR/config.yaml.sample
-echo "Copying back config.yaml"
-cp -f _config_backup.yaml $AGENTDIR/config.yaml
-systemctl restart sfagent
+if [ -d "$AGENTDIR" ];
+then
+    ARCH=`uname -m`
+    echo "Backingup config.yaml"
+    cp -f $AGENTDIR/config.yaml _config_backup.yaml
+    rm -rf checksum* sfagent* mappings
+    curl -sL $RELEASEURL \
+    | grep -w "browser_download_url" \
+    | cut -d":" -f 2,3 \
+    | tr -d '"' \
+    | xargs wget -q 
+    ls -l sfagent* checksum*
+    tar -zxvf sfagent*linux_$ARCH.tar.gz
+    mv -f sfagent $AGENTDIR
+    mv -f jolokia.jar $AGENTDIR
+    mv -f mappings/* $AGENTDIR/mappings/
+    mv -f scripts/* $AGENTDIR/scripts/
+    mv -f config.yaml.sample $AGENTDIR/config.yaml.sample
+    echo "Copying back config.yaml"
+    cp -f _config_backup.yaml $AGENTDIR/config.yaml
+    systemctl restart sfagent
+else
+    echo "directory $AGENTDIR doesn't exists"
+    install_fluent_bit
+    install_apm_agent
+fi
+
 
 }
 
