@@ -8,6 +8,7 @@
 1) download install.sh
 2) execute **chmod +x install.sh** to give executable permision
 3) run install.sh as root to install td-agent-bit and sfagent
+4) run **sh install.sh upgrade** to upgrade binaries
 
 ## using ansible playbook
 1) make sure targets nodes have python installed on them.
