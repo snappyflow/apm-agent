@@ -43,6 +43,7 @@ upgrade_apm_agent()
 
 if [ -d "$AGENTDIR" ];
 then
+    systemctl stop sfagent
     ARCH=`uname -m`
     echo "Backingup config.yaml"
     cp -f $AGENTDIR/config.yaml _config_backup.yaml
@@ -61,7 +62,7 @@ then
     mv -f config.yaml.sample $AGENTDIR/config.yaml.sample
     echo "Copying back config.yaml"
     cp -f _config_backup.yaml $AGENTDIR/config.yaml
-    systemctl restart sfagent
+    systemctl start sfagent
 else
     echo "directory $AGENTDIR doesn't exists"
     install_fluent_bit
@@ -74,6 +75,7 @@ fi
 install_apm_agent()
 {
 
+systemctl stop sfagent
 ARCH=`uname -m`
 rm -rf checksum* sfagent* mappings $AGENTDIR
 curl -sL $RELEASEURL \
@@ -91,28 +93,6 @@ mv jolokia.jar $AGENTDIR
 mv mappings $AGENTDIR/.
 mv scripts $AGENTDIR/.
 mv config.yaml.sample $AGENTDIR/config.yaml.sample
-
-cat > /etc/systemd/system/sfagent-config.service <<EOF
-[Unit]
-Description=snappyflow apm service
-ConditionPathExists=!$AGENTDIR/generated-config.yaml
-After=network.target
- 
-[Service]
-Type=oneshot
-
-WorkingDirectory=$AGENTDIR
-ExecStartPre=/bin/mkdir -p /var/log/sfagent
-ExecStartPre=/bin/chmod 755 /var/log/sfagent
-ExecStart=$AGENTDIR/sfagent -generate-config -file-name $AGENTDIR/generated-config.yaml
-
-StandardOutput=syslog
-StandardError=syslog
-SyslogIdentifier=sfagent
- 
-[Install]
-WantedBy=multi-user.target
-EOF
 
 cat > /etc/systemd/system/sfagent.service <<EOF
 [Unit]
@@ -139,9 +119,7 @@ WantedBy=multi-user.target
 EOF
 
 systemctl daemon-reload
-systemctl enable sfagent-config
 systemctl enable sfagent
-systemctl start sfagent-config
 # systemctl start sfagent
 
 }
