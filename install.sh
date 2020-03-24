@@ -5,6 +5,7 @@ set -e
 
 RELEASEURL="https://api.github.com/repos/snappyflow/apm-agent/releases/latest"
 AGENTDIR="/opt/sfagent"
+TDAGENTCONFDIR="/etc/td-agent-bit"
 ID=`cat /etc/os-release | grep -w "ID" | cut -d"=" -f2 | tr -d '"'`
 
 install_fluent_bit()
@@ -15,10 +16,12 @@ CODENAME=`cat /etc/os-release | grep -w "VERSION_CODENAME" | cut -d"=" -f2 | tr 
 curl -sOL https://packages.fluentbit.io/fluentbit.key;
 apt-key add fluentbit.key
 apt-add-repository "deb https://packages.fluentbit.io/$ID/$CODENAME $CODENAME main"
+add-apt-repository -y ppa:maxmind/ppa
 apt-get update
 apt-get install -y td-agent-bit
 systemctl enable td-agent-bit
 systemctl start td-agent-bit
+apt-get install -y mmdb-bin
 fi
 
 if [ "$ID" = "centos" ]; then
@@ -32,6 +35,7 @@ gpgkey=http://packages.fluentbit.io/fluentbit.key
 enabled=1
 EOF
 yum install -y td-agent-bit wget
+yum install -y epel-release libmaxminddb-devel
 systemctl enable td-agent-bit
 # systemctl start td-agent-bit
 fi
@@ -93,6 +97,8 @@ mv jolokia.jar $AGENTDIR
 mv mappings $AGENTDIR/.
 mv scripts $AGENTDIR/.
 mv config.yaml.sample $AGENTDIR/config.yaml.sample
+mv geoipdb.tar.gz $TDAGENTCONFDIR/geoipdb.tar.gz
+tar -C $TDAGENTCONFDIR -xf $TDAGENTCONFDIR/geoipdb.tar.gz
 
 cat > /etc/systemd/system/sfagent.service <<EOF
 [Unit]
