@@ -123,7 +123,9 @@ systemctl enable sfagent
 
 }
 
-pushd /tmp
+oldpath=`pwd`
+cd /tmp
+
 if [ "$1" == "upgrade" ];
 then
     echo "Upgrading apm agent binaries"
@@ -132,5 +134,5 @@ else
     install_fluent_bit
     install_apm_agent
 fi
-popd
+cd $oldpath
 
