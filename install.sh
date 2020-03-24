@@ -77,7 +77,6 @@ fi
 install_apm_agent()
 {
 
-systemctl stop sfagent
 ARCH=`uname -m`
 rm -rf checksum* sfagent* mappings $AGENTDIR
 curl -sL $RELEASEURL \
