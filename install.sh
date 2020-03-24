@@ -18,10 +18,9 @@ apt-key add fluentbit.key
 apt-add-repository "deb https://packages.fluentbit.io/$ID/$CODENAME $CODENAME main"
 add-apt-repository -y ppa:maxmind/ppa
 apt-get update
-apt-get install -y td-agent-bit
+apt-get install -y td-agent-bit mmdb-bin
 systemctl enable td-agent-bit
 systemctl start td-agent-bit
-apt-get install -y mmdb-bin
 fi
 
 if [ "$ID" = "centos" ]; then
@@ -34,8 +33,7 @@ gpgcheck=1
 gpgkey=http://packages.fluentbit.io/fluentbit.key
 enabled=1
 EOF
-yum install -y td-agent-bit wget
-yum install -y epel-release libmaxminddb-devel
+yum install -y epel-release td-agent-bit wget libmaxminddb-devel
 systemctl enable td-agent-bit
 # systemctl start td-agent-bit
 fi
