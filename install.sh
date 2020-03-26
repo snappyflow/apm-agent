@@ -64,7 +64,7 @@ then
     mv -f config.yaml.sample $AGENTDIR/config.yaml.sample
     echo "Copying back config.yaml"
     cp -f _config_backup.yaml $AGENTDIR/config.yaml
-    systemctl start sfagent
+    systemctl restart sfagent
 else
     echo "directory $AGENTDIR doesn't exists"
     install_fluent_bit
