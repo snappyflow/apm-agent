@@ -13,6 +13,7 @@ install_fluent_bit()
 
 if [ "$ID" = "debian" ] || [ "$ID" = "ubuntu" ]; then
 CODENAME=`cat /etc/os-release | grep -w "VERSION_CODENAME" | cut -d"=" -f2 | tr -d '"'`
+apt-get install -y curl
 curl -sOL https://packages.fluentbit.io/fluentbit.key;
 apt-key add fluentbit.key
 apt-add-repository "deb https://packages.fluentbit.io/$ID/$CODENAME $CODENAME main"
