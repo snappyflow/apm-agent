@@ -3,13 +3,13 @@
 - ubuntu 16 lts
 - centos 7
 
-## apm-agent install commands
+## Install commands (run as root user with sudo privileges)
 1) wget https://github.com/snappyflow/apm-agent/blob/master/install.sh
 2) chmod +x install.sh
 3) sudo ./install.sh
 
-## apm-agent upgrade commands
-1) sudo ./install.sh upgrade-
+## Upgrade commands (run as root user with sudo privileges)
+1) sudo ./install.sh upgrade
 
 ## apm-agent installer
 
