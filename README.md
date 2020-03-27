@@ -4,7 +4,7 @@
 - centos 7
 
 ## Install commands (run as root user with sudo privileges)
-1) wget https://github.com/snappyflow/apm-agent/blob/master/install.sh
+1) wget https://raw.githubusercontent.com/snappyflow/apm-agent/master/install.sh
 2) chmod +x install.sh
 3) sudo ./install.sh
 
