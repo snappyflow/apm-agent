@@ -101,7 +101,6 @@ cat > $AGENTDIR/config.yaml <<EOF
 agent:
 metrics:
 logging:
-targets:
 tags:
 key:
 EOF
