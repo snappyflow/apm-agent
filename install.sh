@@ -97,6 +97,14 @@ mv scripts $AGENTDIR/.
 mv config.yaml.sample $AGENTDIR/config.yaml.sample
 mv geoipdb.tar.gz $TDAGENTCONFDIR/geoipdb.tar.gz
 tar -C $TDAGENTCONFDIR -xf $TDAGENTCONFDIR/geoipdb.tar.gz
+cat > $AGENTDIR/config.yaml <<EOF
+agent:
+metrics:
+logging:
+targets:
+tags:
+key:
+EOF
 
 cat > /etc/systemd/system/sfagent.service <<EOF
 [Unit]
@@ -124,7 +132,7 @@ EOF
 
 systemctl daemon-reload
 systemctl enable sfagent
-# systemctl start sfagent
+systemctl start sfagent
 
 }
 
