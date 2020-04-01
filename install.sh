@@ -131,7 +131,7 @@ EOF
 
 systemctl daemon-reload
 systemctl enable sfagent
-systemctl start sfagent
+systemctl restart sfagent
 
 }
 
