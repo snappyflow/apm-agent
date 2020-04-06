@@ -18,6 +18,12 @@
 3) run install.sh as root to install td-agent-bit and sfagent
 4) run **sh install.sh upgrade** to upgrade binaries
 
+## apm-agent uninstaller
+
+1) download uninstall.sh
+2) execute **chmod +x uninstall.sh** to give executable permision
+3) run uninstall.sh as root to uninstall td-agent-bit and sfagent
+
 ## using ansible playbook
 1) make sure targets nodes have python installed on them.
 2) ansible playbook uses install.sh internally
