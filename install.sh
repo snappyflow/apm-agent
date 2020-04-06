@@ -8,6 +8,21 @@ AGENTDIR="/opt/sfagent"
 TDAGENTCONFDIR="/etc/td-agent-bit"
 ID=`cat /etc/os-release | grep -w "ID" | cut -d"=" -f2 | tr -d '"'`
 
+
+install_jcmd()
+{
+
+if [ "$ID" = "debian" ] || [ "$ID" = "ubuntu" ]; then
+apt-get update
+apt-get install -y openjdk-9-jdk-headless
+fi
+
+if [ "$ID" = "centos" ]; then
+yum install -y java-1.8.0-openjdk-devel
+fi
+
+}
+
 install_fluent_bit()
 {
 
@@ -68,10 +83,8 @@ then
     systemctl restart sfagent
 else
     echo "directory $AGENTDIR doesn't exists"
-    install_fluent_bit
-    install_apm_agent
+    install_services
 fi
-
 
 }
 
@@ -135,6 +148,15 @@ systemctl restart sfagent
 
 }
 
+install_services()
+{
+
+install_fluent_bit
+install_jcmd
+install_apm_agent
+
+}
+
 oldpath=`pwd`
 cd /tmp
 
@@ -143,8 +165,7 @@ then
     echo "Upgrading apm agent binaries"
     upgrade_apm_agent
 else
-    install_fluent_bit
-    install_apm_agent
+    install_services
 fi
 cd $oldpath
 
