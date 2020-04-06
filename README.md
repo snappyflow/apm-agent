@@ -4,19 +4,24 @@
 - centos 7
 
 ## Install commands (run as root user with sudo privileges)
-1) wget https://raw.githubusercontent.com/snappyflow/apm-agent/master/install.sh
-2) chmod +x install.sh
-3) sudo ./install.sh
+'''
+Download script using Wget:
+wget https://raw.githubusercontent.com/snappyflow/apm-agent/master/install.sh
+
+Download script using curl
+curl -fsSL -o install.sh https://raw.githubusercontent.com/snappyflow/apm-agent/master/install.sh
+
+chmod +x install.sh
+sudo ./install.sh
+
+Yes, you can also run
+curl -s https://raw.githubusercontent.com/snappyflow/apm-agent/master/install.sh | bash
+'''
 
 ## Upgrade commands (run as root user with sudo privileges)
-1) sudo ./install.sh upgrade
-
-## apm-agent installer
-
-1) download install.sh
-2) execute **chmod +x install.sh** to give executable permision
-3) run install.sh as root to install td-agent-bit and sfagent
-4) run **sh install.sh upgrade** to upgrade binaries
+'''
+sudo ./install.sh upgrade
+'''
 
 ## using ansible playbook
 1) make sure targets nodes have python installed on them.
