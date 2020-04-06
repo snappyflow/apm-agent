@@ -23,6 +23,12 @@ curl -s https://raw.githubusercontent.com/snappyflow/apm-agent/master/install.sh
 sudo ./install.sh upgrade
 ```
 
+## apm-agent uninstaller
+
+1) download uninstall.sh
+2) execute **chmod +x uninstall.sh** to give executable permision
+3) run uninstall.sh as root to uninstall td-agent-bit and sfagent
+
 ## using ansible playbook
 1) make sure targets nodes have python installed on them.
 2) ansible playbook uses install.sh internally
