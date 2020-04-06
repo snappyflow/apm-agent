@@ -151,7 +151,7 @@ systemctl restart sfagent
 check_jcmd_installation()
 {
 echo "Checking jcmd installation"
-if ! [ -x "$(jcmd -l)" ]; then
+if ! [ -x "$(command -v jcmd)" ]; then
   echo "Error: jcmd is not installed. It is Needed for service discovery"
 else
   echo "jcmd installed"
