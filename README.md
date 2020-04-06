@@ -4,7 +4,7 @@
 - centos 7
 
 ## Install commands (run as root user with sudo privileges)
-'''
+```
 Download script using Wget:
 wget https://raw.githubusercontent.com/snappyflow/apm-agent/master/install.sh
 
@@ -16,12 +16,12 @@ sudo ./install.sh
 
 Yes, you can also run
 curl -s https://raw.githubusercontent.com/snappyflow/apm-agent/master/install.sh | bash
-'''
+```
 
 ## Upgrade commands (run as root user with sudo privileges)
-'''
+```
 sudo ./install.sh upgrade
-'''
+```
 
 ## using ansible playbook
 1) make sure targets nodes have python installed on them.
