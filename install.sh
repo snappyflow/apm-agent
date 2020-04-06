@@ -148,11 +148,24 @@ systemctl restart sfagent
 
 }
 
+check_jcmd_installation()
+{
+echo "Checking jcmd installation"
+if ! [ -x "$(jcmd -l)" ]; then
+  echo "Error: jcmd is not installed. It is Needed for service discovery"
+else
+  echo "jcmd installed"
+fi
+
+
+}
+
 install_services()
 {
 
 install_fluent_bit
-install_jcmd
+#install_jcmd
+check_jcmd_installation
 install_apm_agent
 
 }
@@ -160,7 +173,7 @@ install_apm_agent
 oldpath=`pwd`
 cd /tmp
 
-if [ "$1" == "upgrade" ];
+if [ "$1" = "upgrade" ];
 then
     echo "Upgrading apm agent binaries"
     upgrade_apm_agent

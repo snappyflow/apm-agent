@@ -52,7 +52,7 @@ uninstall_services()
 {
 
 uninstall_fluent_bit
-uninstall_jcmd
+#uninstall_jcmd
 uninstall_apm_agent
 
 }
