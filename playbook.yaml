@@ -8,10 +8,3 @@
 
   - name: Execute install.sh
     command: /tmp/install.sh
-  
-  # by default install.sh donot start sfagent uncomment below lines to start agent
-  # - name: start sfagent
-  #   service:
-  #     name: sfagent
-  #     state: started
-  #     enabled: yes
