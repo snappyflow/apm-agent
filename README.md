@@ -34,4 +34,5 @@ sudo ./install.sh upgrade
 2) ansible playbook uses install.sh internally
 3) install ansible using **pip install -r requirements.txt**
 4) update hosts file, sample can be found in hosts.sample
-5) execute command **ansible-playbook -vv -b -i hosts --key-file=ssh-key.pem playbook.yaml**
+5) To Install: execute command **ansible-playbook -vv -b -i hosts --key-file=ssh-key.pem playbook.yaml**
+6) To Upgrade: execute command **ansible-playbook -vv -b -i hosts --key-file=ssh-key.pem upgrade-playbook.yaml**

@@ -1,0 +1,11 @@
+---
+- name: install sfagent
+  become: yes
+  hosts: all
+  tasks:
+  - name: Transfer install.sh script
+    copy: src=install.sh dest=/tmp/install.sh mode=0777
+
+  - name: Execute install.sh
+    command: /tmp/install.sh upgrade
+    
