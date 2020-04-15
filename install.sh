@@ -7,6 +7,7 @@ RELEASEURL="https://api.github.com/repos/snappyflow/apm-agent/releases/latest"
 AGENTDIR="/opt/sfagent"
 TDAGENTCONFDIR="/etc/td-agent-bit"
 ID=`cat /etc/os-release | grep -w "ID" | cut -d"=" -f2 | tr -d '"'`
+SERVICEFILE="/etc/systemd/system/sfagent.service"
 
 
 install_jcmd()
@@ -61,7 +62,11 @@ upgrade_apm_agent()
 
 if [ -d "$AGENTDIR" ];
 then
-    systemctl stop sfagent
+    if [ -f "$SERVICEFILE" ];
+    then
+	echo "Stop sfagent"
+        systemctl stop sfagent
+    fi
     ARCH=`uname -m`
     echo "Backingup config.yaml"
     cp -f $AGENTDIR/config.yaml _config_backup.yaml
@@ -80,30 +85,7 @@ then
     mv -f config.yaml.sample $AGENTDIR/config.yaml.sample
     echo "Copying back config.yaml"
     cp -f _config_backup.yaml $AGENTDIR/config.yaml
-    cat > /etc/systemd/system/sfagent.service <<EOF
-[Unit]
-Description=snappyflow apm service
-ConditionPathExists=$AGENTDIR/sfagent
-After=network.target
-
-[Service]
-Type=simple
-Restart=on-failure
-RestartSec=10
-WorkingDirectory=$AGENTDIR
-ExecStartPre=/bin/mkdir -p /var/log/sfagent
-ExecStartPre=/bin/chmod 755 /var/log/sfagent
-ExecStart=$AGENTDIR/sfagent -config-file $AGENTDIR/config.yaml
-StandardOutput=syslog
-StandardError=syslog
-SyslogIdentifier=sfagent
-
-[Install]
-WantedBy=multi-user.target
-EOF
-
-    systemctl daemon-reload
-    systemctl enable sfagent
+    create_sfagent_service
     systemctl restart sfagent
 else
     echo "directory $AGENTDIR doesn't exists"
@@ -142,32 +124,7 @@ tags:
 key:
 EOF
 
-cat > /etc/systemd/system/sfagent.service <<EOF
-[Unit]
-Description=snappyflow apm service
-ConditionPathExists=$AGENTDIR/sfagent
-After=network.target
- 
-[Service]
-Type=simple
-Restart=on-failure
-RestartSec=10
-
-WorkingDirectory=$AGENTDIR
-ExecStartPre=/bin/mkdir -p /var/log/sfagent
-ExecStartPre=/bin/chmod 755 /var/log/sfagent
-ExecStart=$AGENTDIR/sfagent -config-file $AGENTDIR/config.yaml
-
-StandardOutput=syslog
-StandardError=syslog
-SyslogIdentifier=sfagent
- 
-[Install]
-WantedBy=multi-user.target
-EOF
-
-systemctl daemon-reload
-systemctl enable sfagent
+create_sfagent_service
 systemctl restart sfagent
 
 }
@@ -181,6 +138,36 @@ else
   echo "jcmd installed"
 fi
 
+
+}
+
+create_sfagent_service()
+{
+echo "create sfagent service file"
+cat > "$SERVICEFILE" <<EOF
+[Unit]
+Description=snappyflow apm service
+ConditionPathExists=$AGENTDIR/sfagent
+After=network.target
+
+[Service]
+Type=simple
+Restart=on-failure
+RestartSec=10
+WorkingDirectory=$AGENTDIR
+ExecStartPre=/bin/mkdir -p /var/log/sfagent
+ExecStartPre=/bin/chmod 755 /var/log/sfagent
+ExecStart=$AGENTDIR/sfagent -config-file $AGENTDIR/config.yaml
+StandardOutput=syslog
+StandardError=syslog
+SyslogIdentifier=sfagent
+
+[Install]
+WantedBy=multi-user.target
+EOF
+
+systemctl daemon-reload
+systemctl enable sfagent
 
 }
 
