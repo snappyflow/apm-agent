@@ -81,26 +81,26 @@ then
     echo "Copying back config.yaml"
     cp -f _config_backup.yaml $AGENTDIR/config.yaml
     cat > /etc/systemd/system/sfagent.service <<EOF
-    [Unit]
-    Description=snappyflow apm service
-    ConditionPathExists=$AGENTDIR/sfagent
-    After=network.target
+[Unit]
+Description=snappyflow apm service
+ConditionPathExists=$AGENTDIR/sfagent
+After=network.target
 
-    [Service]
-    Type=simple
-    Restart=on-failure
-    RestartSec=10
-    WorkingDirectory=$AGENTDIR
-    ExecStartPre=/bin/mkdir -p /var/log/sfagent
-    ExecStartPre=/bin/chmod 755 /var/log/sfagent
-    ExecStart=$AGENTDIR/sfagent -config-file $AGENTDIR/config.yaml
-    StandardOutput=syslog
-    StandardError=syslog
-    SyslogIdentifier=sfagent
+[Service]
+Type=simple
+Restart=on-failure
+RestartSec=10
+WorkingDirectory=$AGENTDIR
+ExecStartPre=/bin/mkdir -p /var/log/sfagent
+ExecStartPre=/bin/chmod 755 /var/log/sfagent
+ExecStart=$AGENTDIR/sfagent -config-file $AGENTDIR/config.yaml
+StandardOutput=syslog
+StandardError=syslog
+SyslogIdentifier=sfagent
 
-    [Install]
-    WantedBy=multi-user.target
-    EOF
+[Install]
+WantedBy=multi-user.target
+EOF
 
     systemctl daemon-reload
     systemctl enable sfagent
