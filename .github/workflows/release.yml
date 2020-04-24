@@ -5,10 +5,10 @@ on:
     types: [new_release]
 
 jobs:
-  myEvent:
+  release:
     runs-on: ubuntu-latest
     steps:
-      - name: test
+      - name: Tag
         run: echo ${{ github.event.client_payload.ref }}
       - name: Release
         uses: softprops/action-gh-release@v1
