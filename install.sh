@@ -82,6 +82,7 @@ then
     mv -f jolokia.jar $AGENTDIR
     mv -f mappings/* $AGENTDIR/mappings/
     mv -f scripts/* $AGENTDIR/scripts/
+    mv -f certs/* $AGENTDIR/certs/
     mv -f config.yaml.sample $AGENTDIR/config.yaml.sample
     echo "Copying back config.yaml"
     cp -f _config_backup.yaml $AGENTDIR/config.yaml
@@ -113,6 +114,7 @@ mv sfagent $AGENTDIR
 mv jolokia.jar $AGENTDIR
 mv mappings $AGENTDIR/.
 mv scripts $AGENTDIR/.
+mv certs $AGENTDIR/.
 mv config.yaml.sample $AGENTDIR/config.yaml.sample
 mv geoipdb.tar.gz $TDAGENTCONFDIR/geoipdb.tar.gz
 tar -C $TDAGENTCONFDIR -xf $TDAGENTCONFDIR/geoipdb.tar.gz
