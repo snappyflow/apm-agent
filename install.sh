@@ -78,6 +78,7 @@ then
     | xargs wget -q 
     ls -l sfagent* checksum*
     tar -zxvf sfagent*linux_$ARCH.tar.gz
+    mkdir -p $AGENTDIR/certs
     mv -f sfagent $AGENTDIR
     mv -f jolokia.jar $AGENTDIR
     mv -f mappings/* $AGENTDIR/mappings/
@@ -110,6 +111,7 @@ tar -zxvf sfagent*linux_$ARCH.tar.gz
 mkdir -p $AGENTDIR
 mkdir -p $AGENTDIR/mappings
 mkdir -p $AGENTDIR/scripts
+mkdir -p $AGENTDIR/certs
 mv sfagent $AGENTDIR
 mv jolokia.jar $AGENTDIR
 mv mappings $AGENTDIR/.
