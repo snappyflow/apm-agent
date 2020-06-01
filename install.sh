@@ -87,6 +87,7 @@ then
     mv -f config.yaml.sample $AGENTDIR/config.yaml.sample
     echo "Copying back config.yaml"
     cp -f _config_backup.yaml $AGENTDIR/config.yaml
+    chown -R root:root /opt/sfagent
     create_sfagent_service
     systemctl restart sfagent
 else
@@ -128,6 +129,7 @@ tags:
 key:
 EOF
 
+chown -R root:root /opt/sfagent
 create_sfagent_service
 systemctl restart sfagent
 
