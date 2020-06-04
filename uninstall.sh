@@ -40,6 +40,8 @@ rm -rf $TDAGENTCONFDIR
 rm /etc/yum.repos.d/td-agent-bit.repo
 fi
 
+rm -f /etc/logrotate.d/td-agent-bit
+
 }
 
 uninstall_apm_agent()
