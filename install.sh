@@ -4,6 +4,7 @@ set -x
 set -e
 
 RELEASEURL="https://api.github.com/repos/snappyflow/apm-agent/releases/latest"
+FLUENTBIT_x86_64="https://github.com/snappyflow/apm-agent/releases/download/fluentbit.tar.gz.1.9/fluentbit.tar.gz"
 AGENTDIR="/opt/sfagent"
 TDAGENTCONFDIR="/etc/td-agent-bit"
 ID=`cat /etc/os-release | grep -w "ID" | cut -d"=" -f2 | tr -d '"'`
@@ -52,37 +53,20 @@ EOF
 
 install_fluent_bit()
 {
-
-if [ "$ID" = "debian" ] || [ "$ID" = "ubuntu" ]; then
-    CODENAME=`cat /etc/os-release | grep -w "VERSION_CODENAME" | cut -d"=" -f2 | tr -d '"'`
-    apt-get install -y curl
-    curl -sOL https://packages.fluentbit.io/fluentbit.key;
-    apt-key add fluentbit.key
-    apt-add-repository "deb https://packages.fluentbit.io/$ID/$CODENAME $CODENAME main"
-    add-apt-repository -y ppa:maxmind/ppa
-    apt-get update
-    apt-get install -y td-agent-bit mmdb-bin
+    if [ "$ID" = "debian" ] || [ "$ID" = "ubuntu" ]; then
+         apt-get install -y wget curl
+    fi
+    if [ "$ID" = "centos" ]; then
+        yum install -y wget curl
+    fi
+    wget $FLUENTBIT_x86_64
+    mkdir -p /opt/td-agent-bit/bin && mkdir -p /etc/td-agent-bit/
+    tar -zxvf fluentbit.tar.gz && mv -f fluent-bit /opt/td-agent-bit/bin && mv -f GeoLite2-City.mmdb $TDAGENTCONFDIR
+    mv -f td-agent-bit.conf /etc/td-agent-bit/
+    mv -f td-agent-bit.service /etc/systemd/system/td-agent-bit.service
+    systemctl daemon-reload
     systemctl enable td-agent-bit
-    systemctl start td-agent-bit
-fi
-
-if [ "$ID" = "centos" ]; then
-    VERSION=`cat /etc/os-release | grep -w "VERSION_ID" | cut -d"=" -f2 | tr -d '"'`
-    cat > /etc/yum.repos.d/td-agent-bit.repo <<EOF
-[td-agent-bit]
-name = TD Agent Bit
-baseurl = http://packages.fluentbit.io/centos/$VERSION
-gpgcheck=1
-gpgkey=http://packages.fluentbit.io/fluentbit.key
-enabled=1
-EOF
-    yum install -y epel-release td-agent-bit wget libmaxminddb-devel
-    systemctl enable td-agent-bit
-# systemctl start td-agent-bit
-fi
-
 configure_logrotate_flb
-
 }
 
 upgrade_apm_agent()
@@ -145,8 +129,6 @@ install_apm_agent()
     mv scripts $AGENTDIR/.
     mv certs $AGENTDIR/.
     mv config.yaml.sample $AGENTDIR/config.yaml.sample
-    mv geoipdb.tar.gz $TDAGENTCONFDIR/geoipdb.tar.gz
-    tar -C $TDAGENTCONFDIR -xf $TDAGENTCONFDIR/geoipdb.tar.gz
     cat > $AGENTDIR/config.yaml <<EOF
 agent:
 metrics:
@@ -224,3 +206,4 @@ else
     install_services
 fi
 cd $oldpath
+
