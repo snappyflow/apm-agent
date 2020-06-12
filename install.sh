@@ -33,7 +33,7 @@ configure_logrotate_flb()
     fi
 
     if [ "$ID" = "centos" ]; then
-        yum install logrotate
+        yum install -y logrotate
     fi
 
     cat > /etc/logrotate.d/td-agent-bit << EOF
