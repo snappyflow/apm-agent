@@ -11,20 +11,6 @@ ID=`cat /etc/os-release | grep -w "ID" | cut -d"=" -f2 | tr -d '"'`
 SERVICEFILE="/etc/systemd/system/sfagent.service"
 
 
-install_jcmd()
-{
-
-if [ "$ID" = "debian" ] || [ "$ID" = "ubuntu" ]; then
-    apt-get update
-    apt-get install -y openjdk-9-jdk-headless
-fi
-
-if [ "$ID" = "centos" ]; then
-    yum install -y java-1.8.0-openjdk-devel
-fi
-
-}
-
 configure_logrotate_flb()
 {
 
@@ -189,7 +175,6 @@ install_services()
 {
 
 install_fluent_bit
-#install_jcmd
 check_jcmd_installation
 install_apm_agent
 
