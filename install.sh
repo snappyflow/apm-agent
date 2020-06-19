@@ -181,7 +181,9 @@ install_apm_agent
 }
 
 oldpath=`pwd`
-cd /tmp
+#cd /tmp
+tmp_dir=$(mktemp -d -t installsfagent-XXXXXXXXXX)
+cd $tmp_dir
 
 if [ "$1" = "upgrade" ];
 then
@@ -191,4 +193,5 @@ else
     install_services
 fi
 cd $oldpath
+rm -rf $tmp_dir
 
