@@ -7,7 +7,7 @@ AGENTDIR="/opt/sfagent"
 TDAGENTCONFDIR="/etc/td-agent-bit"
 ID=`cat /etc/os-release | grep -w "ID" | cut -d"=" -f2 | tr -d '"'`
 SERVICEFILE="/etc/systemd/system/sfagent.service"
-
+FB_SERVICEFILE="/etc/systemd/system/td-agent-bit.service"
 uninstall_jcmd()
 {
 
@@ -24,6 +24,21 @@ fi
 uninstall_fluent_bit()
 {
 
+#unistall maplelabs custom fluentbit
+if [ -f "$FB_SERVICEFILE" ];
+then
+    echo "remove sfagent service"
+    systemctl stop td-agent-bit
+    systemctl disable td-agent-bit
+    rm -f /etc/systemd/system/td-agent-bit.service
+    systemctl daemon-reload
+    rm -rf $TDAGENTCONFDIR
+    rm -f /etc/logrotate.d/td-agent-bit
+    return
+fi
+
+#uninstall older fluentbit(official td-agent-bit version)
+#To be removed after current agent machines using official td-agent-bit are ported to use custom fluentbit
 if [ "$ID" = "debian" ] || [ "$ID" = "ubuntu" ]; then
 systemctl stop td-agent-bit
 systemctl disable td-agent-bit
@@ -37,9 +52,8 @@ systemctl disable td-agent-bit
 
 yum remove -y td-agent-bit
 rm -rf $TDAGENTCONFDIR
-rm /etc/yum.repos.d/td-agent-bit.repo
+rm -f /etc/yum.repos.d/td-agent-bit.repo
 fi
-
 rm -f /etc/logrotate.d/td-agent-bit
 
 }
@@ -72,4 +86,3 @@ oldpath=`pwd`
 cd /tmp
 uninstall_services
 cd $oldpath
-

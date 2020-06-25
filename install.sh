@@ -9,6 +9,7 @@ AGENTDIR="/opt/sfagent"
 TDAGENTCONFDIR="/etc/td-agent-bit"
 ID=`cat /etc/os-release | grep -w "ID" | cut -d"=" -f2 | tr -d '"'`
 SERVICEFILE="/etc/systemd/system/sfagent.service"
+FB_SERVICEFILE="/etc/systemd/system/td-agent-bit.service"
 
 
 configure_logrotate_flb()
@@ -49,10 +50,24 @@ install_fluent_bit()
     mkdir -p /opt/td-agent-bit/bin && mkdir -p /etc/td-agent-bit/
     tar -zxvf fluentbit.tar.gz && mv -f fluent-bit /opt/td-agent-bit/bin && mv -f GeoLite2-City.mmdb $TDAGENTCONFDIR
     mv -f td-agent-bit.conf /etc/td-agent-bit/
-    mv -f td-agent-bit.service /etc/systemd/system/td-agent-bit.service
+    mv -f td-agent-bit.service $FB_SERVICEFILE
     systemctl daemon-reload
     systemctl enable td-agent-bit
 configure_logrotate_flb
+}
+
+upgrade_fluent_bit()
+{
+    if [ -f "$FB_SERVICEFILE" ]; then
+        echo "Stop fluentbit"
+        systemctl stop td-agent-bit
+    fi
+    wget $FLUENTBIT_x86_64
+    tar -zxvf fluentbit.tar.gz && mv -f fluent-bit /opt/td-agent-bit/bin && mv -f GeoLite2-City.mmdb $TDAGENTCONFDIR
+    mv -f td-agent-bit.conf /etc/td-agent-bit/
+    mv -f td-agent-bit.service $FB_SERVICEFILE
+    systemctl daemon-reload
+    systemctl enable td-agent-bit
 }
 
 upgrade_apm_agent()
@@ -149,7 +164,6 @@ cat > "$SERVICEFILE" <<EOF
 Description=snappyflow apm service
 ConditionPathExists=$AGENTDIR/sfagent
 After=network.target
-
 [Service]
 Type=simple
 Restart=on-failure
@@ -161,7 +175,6 @@ ExecStart=$AGENTDIR/sfagent -config-file $AGENTDIR/config.yaml
 StandardOutput=syslog
 StandardError=syslog
 SyslogIdentifier=sfagent
-
 [Install]
 WantedBy=multi-user.target
 EOF
@@ -187,6 +200,8 @@ cd $tmp_dir
 
 if [ "$1" = "upgrade" ];
 then
+    echo "Upgrading fluent-bit binary"
+    upgrade_fluent_bit
     echo "Upgrading apm agent binaries"
     upgrade_apm_agent
 else
@@ -194,4 +209,3 @@ else
 fi
 cd $oldpath
 rm -rf $tmp_dir
-
