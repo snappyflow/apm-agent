@@ -11,20 +11,6 @@ ID=`cat /etc/os-release | grep -w "ID" | cut -d"=" -f2 | tr -d '"'`
 SERVICEFILE="/etc/systemd/system/sfagent.service"
 
 
-install_jcmd()
-{
-
-if [ "$ID" = "debian" ] || [ "$ID" = "ubuntu" ]; then
-    apt-get update
-    apt-get install -y openjdk-9-jdk-headless
-fi
-
-if [ "$ID" = "centos" ]; then
-    yum install -y java-1.8.0-openjdk-devel
-fi
-
-}
-
 configure_logrotate_flb()
 {
 
@@ -33,7 +19,7 @@ configure_logrotate_flb()
     fi
 
     if [ "$ID" = "centos" ]; then
-        yum install logrotate
+        yum install -y logrotate
     fi
 
     cat > /etc/logrotate.d/td-agent-bit << EOF
@@ -189,14 +175,15 @@ install_services()
 {
 
 install_fluent_bit
-#install_jcmd
 check_jcmd_installation
 install_apm_agent
 
 }
 
 oldpath=`pwd`
-cd /tmp
+#cd /tmp
+tmp_dir=$(mktemp -d -t installsfagent-XXXXXXXXXX)
+cd $tmp_dir
 
 if [ "$1" = "upgrade" ];
 then
@@ -206,4 +193,5 @@ else
     install_services
 fi
 cd $oldpath
+rm -rf $tmp_dir
 
