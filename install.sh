@@ -9,7 +9,6 @@ AGENTDIR="/opt/sfagent"
 TDAGENTCONFDIR="/etc/td-agent-bit"
 ID=`cat /etc/os-release | grep -w "ID" | cut -d"=" -f2 | tr -d '"'`
 SERVICEFILE="/etc/systemd/system/sfagent.service"
-FB_SERVICEFILE="/etc/systemd/system/td-agent-bit.service"
 
 
 configure_logrotate_flb()
@@ -48,26 +47,22 @@ install_fluent_bit()
     fi
     wget $FLUENTBIT_x86_64
     mkdir -p /opt/td-agent-bit/bin && mkdir -p /etc/td-agent-bit/
-    tar -zxvf fluentbit.tar.gz && mv -f fluent-bit /opt/td-agent-bit/bin && mv -f GeoLite2-City.mmdb $TDAGENTCONFDIR
+    tar -zxvf fluentbit.tar.gz && mv -f fluent-bit /opt/td-agent-bit/bin/td-agent-bit && mv -f GeoLite2-City.mmdb $TDAGENTCONFDIR
     mv -f td-agent-bit.conf /etc/td-agent-bit/
-    mv -f td-agent-bit.service $FB_SERVICEFILE
-    systemctl daemon-reload
-    systemctl enable td-agent-bit
-configure_logrotate_flb
+    configure_logrotate_flb
 }
 
 upgrade_fluent_bit()
 {
-    if [ -f "$FB_SERVICEFILE" ]; then
-        echo "Stop fluentbit"
+    td_agent_bit_status=$(systemctl show -p ActiveState td-agent-bit | cut -d'=' -f2)
+    if [ "$td_agent_bit_status" = "active" ];
+    then
         systemctl stop td-agent-bit
+        systemctl disable td-agent-bit
     fi
     wget $FLUENTBIT_x86_64
-    tar -zxvf fluentbit.tar.gz && mv -f fluent-bit /opt/td-agent-bit/bin && mv -f GeoLite2-City.mmdb $TDAGENTCONFDIR
-    mv -f td-agent-bit.conf /etc/td-agent-bit/
-    mv -f td-agent-bit.service $FB_SERVICEFILE
-    systemctl daemon-reload
-    systemctl enable td-agent-bit
+    tar -zxvf fluentbit.tar.gz && mv -f fluent-bit /opt/td-agent-bit/bin/td-agent-bit && mv -f GeoLite2-City.mmdb $TDAGENTCONFDIR
+    mv -f td-agent-bit.conf /etc/td-agent-bit
 }
 
 upgrade_apm_agent()

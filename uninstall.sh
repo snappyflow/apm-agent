@@ -70,14 +70,14 @@ then
 fi
 rm -rf  $AGENTDIR
 rm -rf /var/log/sfagent
-
+rm -rf /etc/td-agent-bit
 }
 
 uninstall_services()
 {
 
 uninstall_apm_agent
-uninstall_fluent_bit
+#uninstall_fluent_bit
 #uninstall_jcmd
 
 }
