@@ -70,6 +70,9 @@ then
 fi
 rm -rf  $AGENTDIR
 rm -rf /var/log/sfagent
+
+#removing fluentbit related assets
+rm -rf /opt/td-agent-bit
 rm -rf /etc/td-agent-bit
 }
 
