@@ -1,6 +1,6 @@
 #!/bin/bash
 
-set -x
+#set -x
 set -e
 
 RELEASEURL="https://api.github.com/repos/snappyflow/apm-agent/releases/latest"
@@ -13,13 +13,13 @@ SERVICEFILE="/etc/systemd/system/sfagent.service"
 
 configure_logrotate_flb()
 {
-
+    echo "Configure logrotate fluent-bit started"
     if [ "$ID" = "debian" ] || [ "$ID" = "ubuntu" ]; then
-        apt install -y logrotate
+        apt install -y logrotate &>/dev/null
     fi
 
     if [ "$ID" = "centos" ]; then
-        yum install -y logrotate
+        yum install -y logrotate &>/dev/null
     fi
 
     cat > /etc/logrotate.d/td-agent-bit << EOF
@@ -33,12 +33,14 @@ configure_logrotate_flb()
 	rotate 7
 }
 EOF
-
+  echo "Configure logrotate fluent-bit completed"
 }
 
 
 install_fluent_bit()
 {
+    echo "                                           "
+    echo "Install fluent-bit started "
     if [ "$ID" = "debian" ] || [ "$ID" = "ubuntu" ]; then
          apt-get install -y wget curl
     fi
@@ -47,9 +49,11 @@ install_fluent_bit()
     fi
     wget $FLUENTBIT_x86_64
     mkdir -p /opt/td-agent-bit/bin && mkdir -p /etc/td-agent-bit/
-    tar -zxvf fluentbit.tar.gz && mv -f fluent-bit /opt/td-agent-bit/bin/td-agent-bit && mv -f GeoLite2-City.mmdb $TDAGENTCONFDIR
+    tar -zxvf fluentbit.tar.gz >/dev/null && mv -f fluent-bit /opt/td-agent-bit/bin/td-agent-bit && mv -f GeoLite2-City.mmdb $TDAGENTCONFDIR
     mv -f td-agent-bit.conf /etc/td-agent-bit/
     configure_logrotate_flb
+    echo "Install fluent-bit completed"
+    echo "                             "
 }
 
 upgrade_fluent_bit()
@@ -61,13 +65,13 @@ upgrade_fluent_bit()
         systemctl disable td-agent-bit
     fi
     wget $FLUENTBIT_x86_64
-    tar -zxvf fluentbit.tar.gz && mv -f fluent-bit /opt/td-agent-bit/bin/td-agent-bit && mv -f GeoLite2-City.mmdb $TDAGENTCONFDIR
+    tar -zxvf fluentbit.tar.gz >/dev/null && mv -f fluent-bit /opt/td-agent-bit/bin/td-agent-bit && mv -f GeoLite2-City.mmdb $TDAGENTCONFDIR
     mv -f td-agent-bit.conf /etc/td-agent-bit
+    echo "Upgrade fluent-bit binary completed "
 }
 
 upgrade_apm_agent()
 {
-
 if [ -d "$AGENTDIR" ]; then
     if [ -f "$SERVICEFILE" ]; then
         echo "Stop sfagent"
@@ -82,8 +86,8 @@ if [ -d "$AGENTDIR" ]; then
     | cut -d":" -f 2,3 \
     | tr -d '"' \
     | xargs wget -q 
-    ls -l sfagent* checksum*
-    tar -zxvf sfagent*linux_$ARCH.tar.gz
+    ls -l sfagent* checksum* >/dev/null
+    tar -zxvf sfagent*linux_$ARCH.tar.gz >/dev/null
     mkdir -p $AGENTDIR/certs
     mv -f sfagent $AGENTDIR
     mv -f jolokia.jar $AGENTDIR
@@ -96,6 +100,7 @@ if [ -d "$AGENTDIR" ]; then
     chown -R root:root /opt/sfagent
     create_sfagent_service
     systemctl restart sfagent
+    echo "Upgrading apm agent binaries completed"
 else
     echo "directory $AGENTDIR doesn't exists"
     install_services
@@ -105,16 +110,17 @@ fi
 
 install_apm_agent()
 {
-
+    echo "                         "
+    echo "Install APM Agent started"
     ARCH=`uname -m`
     rm -rf checksum* sfagent* mappings $AGENTDIR
     curl -sL $RELEASEURL \
     | grep -w "browser_download_url" \
     | cut -d":" -f 2,3 \
     | tr -d '"' \
-    | xargs wget -q 
-    ls -l sfagent* checksum*
-    tar -zxvf sfagent*linux_$ARCH.tar.gz
+    | xargs wget -q
+    ls -l sfagent* checksum* >/dev/null
+    tar -zxvf sfagent*linux_$ARCH.tar.gz >/dev/null
     mkdir -p $AGENTDIR
     mkdir -p $AGENTDIR/mappings
     mkdir -p $AGENTDIR/scripts
@@ -136,19 +142,19 @@ EOF
     chown -R root:root /opt/sfagent
     create_sfagent_service
     systemctl restart sfagent
-
+    echo "Install APM Agent completed"
+    echo "                               "
 }
 
 check_jcmd_installation()
 {
-
+echo "                          "
 echo "Checking jcmd installation"
 if ! [ -x "$(command -v jcmd)" ]; then
   echo "Error: jcmd is not installed. It is Needed for service discovery"
 else
   echo "jcmd installed"
 fi
-
 }
 
 create_sfagent_service()
