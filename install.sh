@@ -15,7 +15,7 @@ configure_logrotate_flb()
 {
     echo "Configure logrotate fluent-bit started"
     if [ "$ID" = "debian" ] || [ "$ID" = "ubuntu" ]; then
-        apt install -y logrotate &>/dev/null
+        apt install -qy logrotate &>/dev/null
     fi
 
     if [ "$ID" = "centos" ]; then
@@ -42,7 +42,7 @@ install_fluent_bit()
     echo "                                           "
     echo "Install fluent-bit started "
     if [ "$ID" = "debian" ] || [ "$ID" = "ubuntu" ]; then
-         apt-get install -y wget curl
+         apt-get install -y -q wget curl
     fi
     if [ "$ID" = "centos" ]; then
         yum install -y wget curl
@@ -151,9 +151,9 @@ check_jcmd_installation()
 echo "                          "
 echo "Checking jcmd installation"
 if ! [ -x "$(command -v jcmd)" ]; then
-  echo "Error: jcmd is not installed. It is Needed for service discovery"
+  echo "Warning: jcmd is not installed. Java applications will not be detected automatically"
 else
-  echo "jcmd installed"
+  echo "jcmd is installed"
 fi
 }
 
