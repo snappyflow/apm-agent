@@ -87,7 +87,7 @@ upgrade_java_agent()
     mkdir -p /opt/sfagent/sftrace/java
     wget $JAVA_AGENT_x86_64
     tar -zxvf sftrace-agent-1.16.1.tar.gz >/dev/null && mv -f sftrace-agent-1.16.1.jar /opt/sfagent/sftrace/java
-    echo "Upgrade sftrace java-agnet completed "
+    echo "Upgrade sftrace java-agent completed "
 }
 
 upgrade_apm_agent()
