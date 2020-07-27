@@ -82,6 +82,13 @@ upgrade_fluent_bit()
     echo "Upgrade fluent-bit binary completed "
 }
 
+upgrade_java_agent()
+{
+    wget $JAVA_AGENT_x86_64
+    tar -zxvf sftrace-agent-1.16.1.tar.gz >/dev/null && mv -f sftrace-agent-1.16.1.jar /opt/sfagent/sftrace/java
+    echo "Upgrade sftrace java-agnet completed "
+}
+
 upgrade_apm_agent()
 {
 if [ -d "$AGENTDIR" ]; then
@@ -220,6 +227,8 @@ then
     upgrade_fluent_bit
     echo "Upgrading apm agent binaries"
     upgrade_apm_agent
+    echo "Upgrading sftrace java-agnet"
+    upgrade_java_agent
 else
     install_services
 fi
