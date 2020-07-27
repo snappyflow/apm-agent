@@ -60,11 +60,11 @@ install_fluent_bit()
 install_java_agent()
 {
     echo "                                           "
-    echo "Install elastic java-agent started "
+    echo "Install sftrace java-agent started "
     wget $JAVA_AGENT_x86_64
     mkdir -p /opt/sfagent/sftrace/java
     tar -zxvf sftrace-agent-1.16.1.tar.gz >/dev/null && mv -f sftrace-agent-1.16.1.jar /opt/sfagent/sftrace/java
-    echo "Install elastic java-agent completed"
+    echo "Install sftrace java-agent completed"
     echo "                             "
 }
 
