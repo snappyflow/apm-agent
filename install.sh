@@ -5,6 +5,7 @@ set -e
 
 RELEASEURL="https://api.github.com/repos/snappyflow/apm-agent/releases/latest"
 FLUENTBIT_x86_64="https://github.com/snappyflow/apm-agent/releases/download/fluentbit.tar.gz.1.9/fluentbit.tar.gz"
+JAVA_AGENT_x86_64="https://github.com/snappyflow/apm-agent/releases/download/sf-trace-java-agent-1.16.1/sftrace-agent-1.16.1.tar.gz"
 AGENTDIR="/opt/sfagent"
 TDAGENTCONFDIR="/etc/td-agent-bit"
 ID=`cat /etc/os-release | grep -w "ID" | cut -d"=" -f2 | tr -d '"'`
@@ -56,6 +57,17 @@ install_fluent_bit()
     echo "                             "
 }
 
+install_java_agent()
+{
+    echo "                                           "
+    echo "Install sftrace java-agent started "
+    wget $JAVA_AGENT_x86_64
+    mkdir -p /opt/sfagent/sftrace/java
+    tar -zxvf sftrace-agent-1.16.1.tar.gz >/dev/null && mv -f sftrace-agent-1.16.1.jar /opt/sfagent/sftrace/java
+    echo "Install sftrace java-agent completed"
+    echo "                             "
+}
+
 upgrade_fluent_bit()
 {
     td_agent_bit_status=$(systemctl show -p ActiveState td-agent-bit | cut -d'=' -f2)
@@ -68,6 +80,14 @@ upgrade_fluent_bit()
     tar -zxvf fluentbit.tar.gz >/dev/null && mv -f fluent-bit /opt/td-agent-bit/bin/td-agent-bit && mv -f GeoLite2-City.mmdb $TDAGENTCONFDIR
     mv -f td-agent-bit.conf /etc/td-agent-bit
     echo "Upgrade fluent-bit binary completed "
+}
+
+upgrade_java_agent()
+{
+    mkdir -p /opt/sfagent/sftrace/java
+    wget $JAVA_AGENT_x86_64
+    tar -zxvf sftrace-agent-1.16.1.tar.gz >/dev/null && mv -f sftrace-agent-1.16.1.jar /opt/sfagent/sftrace/java
+    echo "Upgrade sftrace java-agent completed "
 }
 
 upgrade_apm_agent()
@@ -193,6 +213,7 @@ install_services()
 install_fluent_bit
 check_jcmd_installation
 install_apm_agent
+install_java_agent
 
 }
 
@@ -207,6 +228,8 @@ then
     upgrade_fluent_bit
     echo "Upgrading apm agent binaries"
     upgrade_apm_agent
+    echo "Upgrading sftrace java-agnet"
+    upgrade_java_agent
 else
     install_services
 fi
