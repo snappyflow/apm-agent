@@ -5,6 +5,7 @@ set -e
 
 RELEASEURL="https://api.github.com/repos/snappyflow/apm-agent/releases/latest"
 FLUENTBIT_x86_64="https://github.com/snappyflow/apm-agent/releases/download/fluentbit.tar.gz.1.9/fluentbit.tar.gz"
+JAVA_AGENT_x86_64="https://github.com/snappyflow/apm-agent/releases/download/sf-trace-java-agent-1.16.1/sftrace-agent-1.16.1.tar.gz"
 AGENTDIR="/opt/sfagent"
 TDAGENTCONFDIR="/etc/td-agent-bit"
 ID=`cat /etc/os-release | grep -w "ID" | cut -d"=" -f2 | tr -d '"'`
@@ -53,6 +54,17 @@ install_fluent_bit()
     mv -f td-agent-bit.conf /etc/td-agent-bit/
     configure_logrotate_flb
     echo "Install fluent-bit completed"
+    echo "                             "
+}
+
+install_java_agent()
+{
+    echo "                                           "
+    echo "Install elastic java-agent started "
+    wget $JAVA_AGENT_x86_64
+    mkdir -p /opt/sfagent/sftrace/java
+    tar -zxvf sftrace-agent-1.16.1.tar.gz >/dev/null && mv -f sftrace-agent-1.16.1.jar /opt/sfagent/sftrace/java
+    echo "Install elastic java-agent completed"
     echo "                             "
 }
 
@@ -193,6 +205,7 @@ install_services()
 install_fluent_bit
 check_jcmd_installation
 install_apm_agent
+install_java_agent
 
 }
 
