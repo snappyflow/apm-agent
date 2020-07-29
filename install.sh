@@ -5,7 +5,7 @@ set -e
 
 RELEASEURL="https://api.github.com/repos/snappyflow/apm-agent/releases/latest"
 FLUENTBIT_x86_64="https://github.com/snappyflow/apm-agent/releases/download/fluentbit.tar.gz.1.9/fluentbit.tar.gz"
-JAVA_AGENT_x86_64="https://github.com/snappyflow/apm-agent/releases/download/sf-trace-java-agent-1.16.1/sftrace-agent-1.16.1.tar.gz"
+SF_AGENT_x86_64="https://github.com/snappyflow/apm-agent/releases/download/sftrace-1.0/sftrace-1.0.tar.gz"
 AGENTDIR="/opt/sfagent"
 TDAGENTCONFDIR="/etc/td-agent-bit"
 ID=`cat /etc/os-release | grep -w "ID" | cut -d"=" -f2 | tr -d '"'`
@@ -57,14 +57,14 @@ install_fluent_bit()
     echo "                             "
 }
 
-install_java_agent()
+install_sftrace_agent()
 {
     echo "                                           "
-    echo "Install sftrace java-agent started "
-    wget $JAVA_AGENT_x86_64
-    mkdir -p /opt/sfagent/sftrace/java
-    tar -zxvf sftrace-agent-1.16.1.tar.gz >/dev/null && mv -f sftrace-agent-1.16.1.jar /opt/sfagent/sftrace/java
-    echo "Install sftrace java-agent completed"
+    echo "Install sftrace java-agent and python-agent started "
+    wget $SF_AGENT_x86_64
+    mkdir -p /opt/sfagent/sftrace
+    tar -zxvf sftrace-1.0.tar.gz >/dev/null && mv -f sfjava /opt/sfagent/sftrace && mv -f sfpython /opt/sfagent/sftrace
+    echo "Install sftrace java-agent and python-agent completed"
     echo "                             "
 }
 
@@ -82,12 +82,14 @@ upgrade_fluent_bit()
     echo "Upgrade fluent-bit binary completed "
 }
 
-upgrade_java_agent()
+upgrade_sftrace_agent()
 {
-    mkdir -p /opt/sfagent/sftrace/java
-    wget $JAVA_AGENT_x86_64
-    tar -zxvf sftrace-agent-1.16.1.tar.gz >/dev/null && mv -f sftrace-agent-1.16.1.jar /opt/sfagent/sftrace/java
-    echo "Upgrade sftrace java-agent completed "
+    wget $SF_AGENT_x86_64
+    rm -rf /opt/sfagent/sftrace
+    mkdir -p /opt/sfagent/sftrace
+    tar -zxvf sftrace-1.0.tar.gz >/dev/null && mv -f sfjava /opt/sfagent/sftrace && mv -f sfpython /opt/sfagent/sftrace
+    echo "Upgrade sftrace java-agent and python-agent completed"
+
 }
 
 upgrade_apm_agent()
@@ -213,7 +215,7 @@ install_services()
 install_fluent_bit
 check_jcmd_installation
 install_apm_agent
-install_java_agent
+install_sftrace_agent
 
 }
 
@@ -228,8 +230,8 @@ then
     upgrade_fluent_bit
     echo "Upgrading apm agent binaries"
     upgrade_apm_agent
-    echo "Upgrading sftrace java-agnet"
-    upgrade_java_agent
+    echo "Upgrading sftrace_agent"
+    upgrade_sftrace_agent
 else
     install_services
 fi
