@@ -4,7 +4,7 @@
 set -e
 
 RELEASEURL="https://api.github.com/repos/snappyflow/apm-agent/releases/latest"
-FLUENTBIT_x86_64="https://github.com/snappyflow/apm-agent/releases/download/fluentbit.tar.gz.1.10/fluentbit.tar.gz"
+FLUENTBIT_x86_64="https://github.com/snappyflow/apm-agent/releases/download/fluentbit.tar.gz.1.11/fluentbit.tar.gz"
 SF_AGENT_x86_64="https://github.com/snappyflow/apm-agent/releases/download/sftrace-1.0/sftrace-1.0.tar.gz"
 AGENTDIR="/opt/sfagent"
 TDAGENTCONFDIR="/etc/td-agent-bit"
