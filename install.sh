@@ -63,7 +63,7 @@ install_sftrace_agent()
     echo "Install sftrace java-agent and python-agent started "
     wget $SF_AGENT_x86_64
     mkdir -p /opt/sfagent/sftrace
-    tar -zxvf sftrace-1.0.tar.gz >/dev/null && mv -f sfjava /opt/sfagent/sftrace && mv -f sfpython /opt/sfagent/sftrace && mv -f sftrace /opt/sfagent/sftrace
+    tar -zxvf sftrace-1.0.tar.gz >/dev/null && mv -f sfjava /opt/sfagent/sftrace && mv -f sftrace /bin
     echo "Install sftrace java-agent and python-agent completed"
     echo "                             "
 }
@@ -86,8 +86,9 @@ upgrade_sftrace_agent()
 {
     wget $SF_AGENT_x86_64
     rm -rf /opt/sfagent/sftrace
+    rm -rf /bin/sftrace
     mkdir -p /opt/sfagent/sftrace
-    tar -zxvf sftrace-1.0.tar.gz >/dev/null && mv -f sfjava /opt/sfagent/sftrace && mv -f sfpython /opt/sfagent/sftrace && mv -f sftrace /opt/sfagent/sftrace
+    tar -zxvf sftrace-1.0.tar.gz >/dev/null && mv -f sfjava /opt/sfagent/sftrace && mv -f sftrace /bin
     echo "Upgrade sftrace java-agent and python-agent completed"
 
 }
