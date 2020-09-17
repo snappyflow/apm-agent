@@ -5,7 +5,7 @@ set -e
 
 RELEASEURL="https://api.github.com/repos/snappyflow/apm-agent/releases/latest"
 FLUENTBIT_x86_64="https://github.com/snappyflow/apm-agent/releases/download/fluentbit.tar.gz.1.11/fluentbit.tar.gz"
-SF_AGENT_x86_64="https://github.com/snappyflow/apm-agent/releases/download/sftrace-1.0/sftrace-1.0.tar.gz"
+SFTRACE_AGENT_x86_64="https://github.com/snappyflow/apm-agent/releases/download/latest/sftrace-agent.tar.gz"
 AGENTDIR="/opt/sfagent"
 TDAGENTCONFDIR="/etc/td-agent-bit"
 ID=`cat /etc/os-release | grep -w "ID" | cut -d"=" -f2 | tr -d '"'`
@@ -61,9 +61,8 @@ install_sftrace_agent()
 {
     echo "                                           "
     echo "Install sftrace java-agent and python-agent started "
-    wget $SF_AGENT_x86_64
-    mkdir -p /opt/sfagent/sftrace
-    tar -zxvf sftrace-1.0.tar.gz >/dev/null && mv -f sfjava /opt/sfagent/sftrace && mv -f sftrace /bin
+    wget $SFTRACE_AGENT_x86_64
+    tar -zxvf sftrace-agent.tar.gz >/dev/null && mv -f sftrace /opt/sfagent && mv -f /opt/sfagent/sftrace/sftrace /bin
     echo "Install sftrace java-agent and python-agent completed"
     echo "                             "
 }
@@ -84,11 +83,10 @@ upgrade_fluent_bit()
 
 upgrade_sftrace_agent()
 {
-    wget $SF_AGENT_x86_64
+    wget $SFTRACE_AGENT_x86_64
     rm -rf /opt/sfagent/sftrace
     rm -rf /bin/sftrace
-    mkdir -p /opt/sfagent/sftrace
-    tar -zxvf sftrace-1.0.tar.gz >/dev/null && mv -f sfjava /opt/sfagent/sftrace && mv -f sftrace /bin
+    tar -zxvf sftrace-agent.tar.gz >/dev/null && mv -f sftrace /opt/sfagent && mv -f /opt/sfagent/sftrace/sftrace /bin
     echo "Upgrade sftrace java-agent and python-agent completed"
 
 }
