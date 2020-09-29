@@ -194,7 +194,9 @@ RestartSec=10
 WorkingDirectory=$AGENTDIR
 ExecStartPre=/bin/mkdir -p /var/log/sfagent
 ExecStartPre=/bin/chmod 755 /var/log/sfagent
-ExecStart=/bin/bash -c "$AGENTDIR/sfagent -config-file $AGENTDIR/config.yaml"
+ExecStartPre=/bin/bash -c -e "/opt/sfagent/sfagent -config-file /opt/sfagent/config.yaml -check-config"
+ExecStart=/bin/bash -c -e "/opt/sfagent/sfagent -config-file /opt/sfagent/config.yaml"
+
 StandardOutput=syslog
 StandardError=syslog
 SyslogIdentifier=sfagent
