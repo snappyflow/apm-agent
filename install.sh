@@ -183,7 +183,7 @@ create_sfagent_service()
 echo "create sfagent service file"
 cat > "$SERVICEFILE" <<EOF
 [Unit]
-Description=snappyflow apm service
+Description=snappyflow apm agent service
 ConditionPathExists=$AGENTDIR/sfagent
 After=network.target
 
