@@ -121,7 +121,7 @@ if [ -d "$AGENTDIR" ]; then
     chown -R root:root /opt/sfagent
     create_sfagent_service
     systemctl restart sfagent
-    echo "Upgrading apm agent binaries completed"
+    echo "Upgrading sfagent binaries completed"
 else
     echo "directory $AGENTDIR doesn't exists"
     install_services
@@ -132,7 +132,7 @@ fi
 install_apm_agent()
 {
     echo "                         "
-    echo "Install APM Agent started"
+    echo "Install sfagent started"
     ARCH=`uname -m`
     rm -rf checksum* sfagent* mappings $AGENTDIR
     curl -sL $RELEASEURL \
@@ -163,7 +163,7 @@ EOF
     chown -R root:root /opt/sfagent
     create_sfagent_service
     systemctl restart sfagent
-    echo "Install APM Agent completed"
+    echo "Install sfagent completed"
     echo "                               "
 }
 
@@ -229,7 +229,7 @@ if [ "$1" = "upgrade" ];
 then
     echo "Upgrading fluent-bit binary"
     upgrade_fluent_bit
-    echo "Upgrading apm agent binaries"
+    echo "Upgrading sfagent binaries"
     upgrade_apm_agent
     echo "Upgrading sftrace_agent"
     upgrade_sftrace_agent
