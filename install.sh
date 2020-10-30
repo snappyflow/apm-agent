@@ -4,7 +4,6 @@
 set -e
 
 RELEASEURL="https://api.github.com/repos/snappyflow/apm-agent/releases/latest"
-FLUENTBIT_x86_64="https://github.com/snappyflow/apm-agent/releases/download/fluentbit.tar.gz.1.11/fluentbit.tar.gz"
 SFTRACE_AGENT_x86_64="https://github.com/snappyflow/apm-agent/releases/download/latest/sftrace-agent.tar.gz"
 AGENTDIR="/opt/sfagent"
 TDAGENTCONFDIR="/etc/td-agent-bit"
@@ -48,7 +47,12 @@ install_fluent_bit()
     if [ "$ID" = "centos" ]; then
         yum install -y wget curl
     fi
-    wget $FLUENTBIT_x86_64
+    curl https://api.github.com/repos/snappyflow/apm-agent/releases?per_page=100 \
+    | grep -w "browser_download_url"|grep fluentbit \
+    | head -n 1 \
+    | cut -d":" -f 2,3 \
+    | tr -d '"' \
+    | xargs wget -q 
     mkdir -p /opt/td-agent-bit/bin && mkdir -p /etc/td-agent-bit/
     tar -zxvf fluentbit.tar.gz >/dev/null && mv -f fluent-bit /opt/td-agent-bit/bin/td-agent-bit && mv -f GeoLite2-City.mmdb $TDAGENTCONFDIR
     mv -f td-agent-bit.conf /etc/td-agent-bit/
@@ -75,7 +79,12 @@ upgrade_fluent_bit()
         systemctl stop td-agent-bit
         systemctl disable td-agent-bit
     fi
-    wget $FLUENTBIT_x86_64
+    curl https://api.github.com/repos/snappyflow/apm-agent/releases?per_page=100 \
+    | grep -w "browser_download_url"|grep fluentbit \
+    | head -n 1 \
+    | cut -d":" -f 2,3 \
+    | tr -d '"' \
+    | xargs wget -q
     tar -zxvf fluentbit.tar.gz >/dev/null && mv -f fluent-bit /opt/td-agent-bit/bin/td-agent-bit && mv -f GeoLite2-City.mmdb $TDAGENTCONFDIR
     mv -f td-agent-bit.conf /etc/td-agent-bit
     echo "Upgrade fluent-bit binary completed "
