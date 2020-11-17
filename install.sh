@@ -234,7 +234,7 @@ oldpath=`pwd`
 tmp_dir=$(mktemp -d -t installsfagent-XXXXXXXXXX)
 cd $tmp_dir
 
-if [ "$1" = "upgrade" ];
+if [ "$1" = "-upgrade" ];
 then
     echo "Upgrading fluent-bit binary"
     upgrade_fluent_bit
@@ -245,7 +245,7 @@ then
 elif ![ -v $1 ];
     install_services     
 else
-    echo "The given argument for upgrading sfagent $1 is not supported.Please use upgrade to upgrade the sfagent"
+    echo "The supported option is (-upgrade)"
     exit 0
 fi
 cd $oldpath
