@@ -234,7 +234,7 @@ oldpath=`pwd`
 tmp_dir=$(mktemp -d -t installsfagent-XXXXXXXXXX)
 cd $tmp_dir
 
-if [ "$1" = "upgrade" ];
+if [ "$1" = "-upgrade" ];
 then
     echo "Upgrading fluent-bit binary"
     upgrade_fluent_bit
@@ -242,8 +242,12 @@ then
     upgrade_apm_agent
     echo "Upgrading sftrace_agent"
     upgrade_sftrace_agent
+elif ![ -v $1 ];
+then
+    install_services     
 else
-    install_services
+    echo "The supported option is (-upgrade)"
+    exit 0
 fi
 cd $oldpath
 rm -rf $tmp_dir
