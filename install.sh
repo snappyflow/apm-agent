@@ -242,7 +242,7 @@ then
     upgrade_apm_agent
     echo "Upgrading sftrace_agent"
     upgrade_sftrace_agent
-elif ![ -v $1 ];
+elif [ -z $1 ];
 then
     install_services     
 else
