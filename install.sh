@@ -242,6 +242,8 @@ then
     upgrade_apm_agent
     echo "Upgrading sftrace_agent"
     upgrade_sftrace_agent
+elif ![ -v $1 ];
+    install_services     
 else
     echo "The given argument for upgrading sfagent $1 is not supported.Please use upgrade to upgrade the sfagent"
     exit 0
