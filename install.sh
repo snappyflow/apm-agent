@@ -243,6 +243,7 @@ then
     echo "Upgrading sftrace_agent"
     upgrade_sftrace_agent
 elif ![ -v $1 ];
+then
     install_services     
 else
     echo "The supported option is (-upgrade)"
