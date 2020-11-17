@@ -243,7 +243,8 @@ then
     echo "Upgrading sftrace_agent"
     upgrade_sftrace_agent
 else
-    install_services
+    echo "The given argument for upgrading sfagent $1 is not supported.Please use upgrade to upgrade the sfagent"
+    exit 0
 fi
 cd $oldpath
 rm -rf $tmp_dir
