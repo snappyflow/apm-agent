@@ -20,7 +20,7 @@ curl -s https://raw.githubusercontent.com/snappyflow/apm-agent/master/install.sh
 
 ## Upgrade commands (run as root user with sudo privileges)
 ```
-sudo ./install.sh upgrade
+sudo ./install.sh -upgrade
 ```
 
 ## apm-agent uninstaller
