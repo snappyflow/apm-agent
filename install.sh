@@ -261,10 +261,11 @@ done
 if [ "$SHOW_HELP" -eq 1 ];
 then
     echo "usage of install.sh"
-    echo "./install.sh [-h|--help][-u|--upgrade][][-p|--include-paths \"/opt/jdk1.8.0_211/bin,/opt/jdk1.8.0_211/jre/bin\"]"
+    echo "./install.sh [-h|--help][-u|--upgrade][][-p|--include-paths \"path1,path2\"]"
     echo "  -h|--help          show usage information"
     echo "  -u|--upgrade       upgrade installed sfagent"
     echo "  -p|--include-paths comma seperated list of paths to include in PATH of sfagent service"
+    echo "                     ex: \"/opt/jdk1.8.0_211/bin,/opt/jdk1.8.0_211/jre/bin\""
     exit 0
 fi
 

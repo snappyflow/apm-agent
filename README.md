@@ -6,10 +6,11 @@
 ## Usage
 ```
 usage of install.sh
-./install.sh [-h|--help][-u|--upgrade][][-p|--include-paths "/opt/jdk1.8.0_211/bin,/opt/jdk1.8.0_211/jre/bin"]
+./install.sh [-h|--help][-u|--upgrade][][-p|--include-paths "path1,path2"]
   -h|--help          show usage information
   -u|--upgrade       upgrade installed sfagent
   -p|--include-paths comma seperated list of paths to include in PATH of sfagent service
+                     ex: "/opt/jdk1.8.0_211/bin,/opt/jdk1.8.0_211/jre/bin"
 ```
 ## Install commands (run as root user with sudo privileges)
 ```
