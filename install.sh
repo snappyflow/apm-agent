@@ -3,12 +3,18 @@
 #set -x
 set -e
 
+# Default values of arguments
+SHOULD_UPGRADE=0
+SHOW_HELP=0
+INCLUDE_PATHS=""
+
 RELEASEURL="https://api.github.com/repos/snappyflow/apm-agent/releases/latest"
 SFTRACE_AGENT_x86_64="https://github.com/snappyflow/apm-agent/releases/download/latest/sftrace-agent.tar.gz"
 AGENTDIR="/opt/sfagent"
 TDAGENTCONFDIR="/etc/td-agent-bit"
 ID=`cat /etc/os-release | grep -w "ID" | cut -d"=" -f2 | tr -d '"'`
 SERVICEFILE="/etc/systemd/system/sfagent.service"
+DEFAULTPATH="/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
 
 
 configure_logrotate_flb()
@@ -189,6 +195,17 @@ fi
 
 create_sfagent_service()
 {
+if [ ! -z "$INCLUDE_PATHS" ];
+then
+    echo "Extra paths to include in PATH - $INCLUDE_PATHS"
+    IFS=","
+    for v in $INCLUDE_PATHS
+    do
+        DEFAULTPATH="$DEFAULTPATH:$v"
+    done
+fi
+echo "Environment PATH=$DEFAULTPATH"
+
 echo "create sfagent service file"
 cat > "$SERVICEFILE" <<EOF
 [Unit]
@@ -201,6 +218,7 @@ Type=simple
 Restart=on-failure
 RestartSec=10
 WorkingDirectory=$AGENTDIR
+Environment=PATH=$DEFAULTPATH
 ExecStartPre=/bin/mkdir -p /var/log/sfagent
 ExecStartPre=/bin/chmod 755 /var/log/sfagent
 ExecStartPre=/bin/bash -c -e "/opt/sfagent/sfagent -config-file /opt/sfagent/config.yaml -check-config"
@@ -219,35 +237,61 @@ systemctl enable sfagent
 
 }
 
-install_services()
-{
 
-install_fluent_bit
-check_jcmd_installation
-install_apm_agent
-install_sftrace_agent
 
-}
+for arg in "$@"
+do
+    case $arg in
+        -h|--help)
+        SHOW_HELP=1
+        shift
+        ;;
+        -u|--upgrade)
+        SHOULD_UPGRADE=1
+        shift
+        ;;
+        -p|--include-paths)
+        INCLUDE_PATHS="$2"
+        shift
+        shift
+        ;;
+    esac
+done
+
+if [ "$SHOW_HELP" -eq 1 ];
+then
+    echo "usage of install.sh"
+    echo "./install.sh [-h|--help][-u|--upgrade][][-p|--include-paths \"/opt/jdk1.8.0_211/bin,/opt/jdk1.8.0_211/jre/bin\"]"
+    echo "  -h|--help          show usage information"
+    echo "  -u|--upgrade       upgrade installed sfagent"
+    echo "  -p|--include-paths comma seperated list of paths to include in PATH of sfagent service"
+    exit 0
+fi
 
 oldpath=`pwd`
-#cd /tmp
 tmp_dir=$(mktemp -d -t installsfagent-XXXXXXXXXX)
 cd $tmp_dir
 
-if [ "$1" = "-upgrade" ];
+if [ "$SHOULD_UPGRADE" -eq 1 ];
 then
     echo "Upgrading fluent-bit binary"
     upgrade_fluent_bit
     echo "Upgrading sfagent binaries"
     upgrade_apm_agent
-    echo "Upgrading sftrace_agent"
+    echo "Upgrading sftrace agent"
     upgrade_sftrace_agent
-elif [ -z $1 ];
-then
-    install_services     
 else
-    echo "The supported option is (-upgrade)"
-    exit 0
+    echo "Installing fluent-bit binary"
+    install_fluent_bit
+    echo "Check jcmd installed"
+    check_jcmd_installation
+    echo "Installing APM agent"
+    install_apm_agent
+    echo "Installing sftrace agent"
+    install_sftrace_agent
 fi
+
 cd $oldpath
 rm -rf $tmp_dir
+
+exit 0
