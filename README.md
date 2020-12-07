@@ -5,12 +5,22 @@
 
 ## Usage
 ```
+ubuntu@ip-172-31-92-233:~$ ./install.sh --help
+
 usage of install.sh
-./install.sh [-h|--help][-u|--upgrade][][-p|--include-paths "path1,path2"]
+  ./install.sh [-h|--help][-u|--upgrade][-p|--include-paths "path1,path2"]
+
   -h|--help          show usage information
   -u|--upgrade       upgrade installed sfagent
   -p|--include-paths comma seperated list of paths to include in PATH of sfagent service
                      ex: "/opt/jdk1.8.0_211/bin,/opt/jdk1.8.0_211/jre/bin"
+
+examples:
+  sh ./install.sh
+  sh ./install.sh --include-paths "/opt/jdk1.8.0_211/bin,/opt/jdk1.8.0_211/jre/bin"
+  sh ./install.sh --upgrade
+  sh ./install.sh --upgrade --include-paths "/opt/jdk1.8.0_211/bin,/opt/jdk1.8.0_211/jre/bin"
+
 ```
 ## Install commands (run as root user with sudo privileges)
 ```

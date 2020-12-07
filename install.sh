@@ -237,6 +237,24 @@ systemctl enable sfagent
 
 }
 
+print_usage()
+{
+    echo ""
+    echo "usage of install.sh"
+    echo "  ./install.sh [-h|--help][-u|--upgrade][-p|--include-paths \"path1,path2\"]"
+    echo ""
+    echo "  -h|--help          show usage information"
+    echo "  -u|--upgrade       upgrade installed sfagent"
+    echo "  -p|--include-paths comma seperated list of paths to include in PATH of sfagent service"
+    echo "                     ex: \"/opt/jdk1.8.0_211/bin,/opt/jdk1.8.0_211/jre/bin\""
+    echo ""
+    echo "examples:"
+    echo "  sh ./install.sh"
+    echo "  sh ./install.sh --include-paths \"/opt/jdk1.8.0_211/bin,/opt/jdk1.8.0_211/jre/bin\""
+    echo "  sh ./install.sh --upgrade"
+    echo "  sh ./install.sh --upgrade --include-paths \"/opt/jdk1.8.0_211/bin,/opt/jdk1.8.0_211/jre/bin\""
+    echo ""
+}
 
 
 for arg in "$@"
@@ -255,17 +273,17 @@ do
         shift
         shift
         ;;
+        *)
+        echo "ERROR: invalid argument: $1"
+        print_usage
+        exit 128
+        ;;
     esac
 done
 
 if [ "$SHOW_HELP" -eq 1 ];
 then
-    echo "usage of install.sh"
-    echo "./install.sh [-h|--help][-u|--upgrade][][-p|--include-paths \"path1,path2\"]"
-    echo "  -h|--help          show usage information"
-    echo "  -u|--upgrade       upgrade installed sfagent"
-    echo "  -p|--include-paths comma seperated list of paths to include in PATH of sfagent service"
-    echo "                     ex: \"/opt/jdk1.8.0_211/bin,/opt/jdk1.8.0_211/jre/bin\""
+    print_usage
     exit 0
 fi
 
