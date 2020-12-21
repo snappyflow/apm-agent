@@ -7,24 +7,24 @@
 ## Usage
 
 ```
-ubuntu@ip-172-31-83-53:~$ ./install.sh -h
+$ bash ./install.sh --help
 
 usage of install.sh
   ./install.sh [-h|--help][-u|--upgrade][--paths "path1,path2"][--env "ENV_VAR1=value1,ENV_VAR2=value2"]
 
   -h|--help    show usage information
   -u|--upgrade upgrade installed sfagent
-  --paths   comma seperated list of paths to include in PATH of sfagent service
+  --paths      comma seperated list of paths to include in PATH of sfagent service
                  ex: "/opt/jdk1.8.0_211/bin,/opt/jdk1.8.0_211/jre/bin"
-  --env     comma seperated list of Environemt variables
+  --env        comma seperated list of Environemt variables
                  ex: "HTTP_PROXY=http://proxy.example.com,HTTPS_PROXY=https://proxy.example.com"
 
 examples:
-  sh ./install.sh
-  sh ./install.sh --paths "/opt/jdk1.8.0_211/bin,/opt/jdk1.8.0_211/jre/bin"
-  sh ./install.sh --upgrade
-  sh ./install.sh --upgrade --paths "/opt/jdk1.8.0_211/bin,/opt/jdk1.8.0_211/jre/bin"
-  sh ./install.sh --env "HTTP_PROXY=http://proxy.example.com,HTTPS_PROXY=https://proxy.example.com"
+  ./install.sh
+  ./install.sh --paths "/opt/jdk1.8.0_211/bin,/opt/jdk1.8.0_211/jre/bin"
+  ./install.sh --upgrade
+  ./install.sh --upgrade --paths "/opt/jdk1.8.0_211/bin,/opt/jdk1.8.0_211/jre/bin"
+  ./install.sh --env "HTTP_PROXY=http://proxy.example.com,HTTPS_PROXY=https://proxy.example.com"
 
 ```
 
@@ -65,7 +65,7 @@ sudo ./install.sh -p "/opt/jdk1.8.0_211/bin,/opt/jdk1.8.0_211/jre/bin"
 - useful if you have vms behind proxy
 
 ```
-sh ./install.sh --env "HTTP_PROXY=http://proxy.example.com,HTTPS_PROXY=https://proxy.example.com"
+sudo ./install.sh --env "HTTP_PROXY=http://proxy.example.com,HTTPS_PROXY=https://proxy.example.com"
 ```
 
 ## apm-agent uninstaller

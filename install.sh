@@ -275,14 +275,13 @@ print_usage()
     echo "                 ex: \"HTTP_PROXY=http://proxy.example.com,HTTPS_PROXY=https://proxy.example.com\""
     echo ""
     echo "examples:"
-    echo "  sh ./install.sh"
-    echo "  sh ./install.sh --paths \"/opt/jdk1.8.0_211/bin,/opt/jdk1.8.0_211/jre/bin\""
-    echo "  sh ./install.sh --upgrade"
-    echo "  sh ./install.sh --upgrade --paths \"/opt/jdk1.8.0_211/bin,/opt/jdk1.8.0_211/jre/bin\""
-    echo "  sh ./install.sh --env \"HTTP_PROXY=http://proxy.example.com,HTTPS_PROXY=https://proxy.example.com\""
+    echo "  ./install.sh"
+    echo "  ./install.sh --paths \"/opt/jdk1.8.0_211/bin,/opt/jdk1.8.0_211/jre/bin\""
+    echo "  ./install.sh --upgrade"
+    echo "  ./install.sh --upgrade --paths \"/opt/jdk1.8.0_211/bin,/opt/jdk1.8.0_211/jre/bin\""
+    echo "  ./install.sh --env \"HTTP_PROXY=http://proxy.example.com,HTTPS_PROXY=https://proxy.example.com\""
     echo ""
 }
-
 
 UNKNOWN=()
 while [[ $# -gt 0 ]]
@@ -315,7 +314,7 @@ case $key in
 esac
 done
 
-if [ ! -z $UNKNOWN ]
+if [ ! -z "$UNKNOWN" ]
 then 
     echo "ERROR: unknown arguments: $UNKNOWN"
     print_usage
