@@ -15,6 +15,7 @@ TDAGENTCONFDIR="/etc/td-agent-bit"
 ID=`cat /etc/os-release | grep -w "ID" | cut -d"=" -f2 | tr -d '"'`
 SERVICEFILE="/etc/systemd/system/sfagent.service"
 DEFAULTPATH="/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
+ENV_VARS=""
 
 
 configure_logrotate_flb()
@@ -139,7 +140,7 @@ if [ -d "$AGENTDIR" ]; then
     echo "Upgrading sfagent binaries completed"
 else
     echo "directory $AGENTDIR doesn't exists"
-    install_services
+    install_apm_agent
 fi
 
 }
@@ -193,8 +194,12 @@ else
 fi
 }
 
-create_sfagent_service()
+create_env_file()
 {
+
+echo "Create $AGENTDIR/env.conf file"
+touch $AGENTDIR/env.conf
+
 if [ ! -z "$INCLUDE_PATHS" ];
 then
     echo "Extra paths to include in PATH - $INCLUDE_PATHS"
@@ -205,6 +210,25 @@ then
     done
 fi
 echo "Environment PATH=$DEFAULTPATH"
+echo "PATH=$DEFAULTPATH" >> $AGENTDIR/env.conf
+
+if [ ! -z "$ENV_VARS" ]
+then
+    echo "Append env vars to $AGENTDIR/env.conf"
+    IFS=","
+    for v in $ENV_VARS
+    do
+        echo $v >> $AGENTDIR/env.conf
+    done
+fi
+
+}
+
+create_sfagent_service()
+{
+
+# create env file 
+create_env_file
 
 echo "create sfagent service file"
 cat > "$SERVICEFILE" <<EOF
@@ -218,7 +242,7 @@ Type=simple
 Restart=on-failure
 RestartSec=10
 WorkingDirectory=$AGENTDIR
-Environment=PATH=$DEFAULTPATH
+EnvironmentFile=-$AGENTDIR/env.conf
 ExecStartPre=/bin/mkdir -p /var/log/sfagent
 ExecStartPre=/bin/chmod 755 /var/log/sfagent
 ExecStartPre=/bin/bash -c -e "/opt/sfagent/sfagent -config-file /opt/sfagent/config.yaml -check-config"
@@ -241,45 +265,62 @@ print_usage()
 {
     echo ""
     echo "usage of install.sh"
-    echo "  ./install.sh [-h|--help][-u|--upgrade][-p|--include-paths \"path1,path2\"]"
+    echo "  ./install.sh [-h|--help][-u|--upgrade][--paths \"path1,path2\"][--env \"ENV_VAR1=value1,ENV_VAR2=value2\"]"
     echo ""
-    echo "  -h|--help          show usage information"
-    echo "  -u|--upgrade       upgrade installed sfagent"
-    echo "  -p|--include-paths comma seperated list of paths to include in PATH of sfagent service"
-    echo "                     ex: \"/opt/jdk1.8.0_211/bin,/opt/jdk1.8.0_211/jre/bin\""
+    echo "  -h|--help    show usage information"
+    echo "  -u|--upgrade upgrade installed sfagent"
+    echo "  --paths      comma seperated list of paths to include in PATH of sfagent service"
+    echo "                 ex: \"/opt/jdk1.8.0_211/bin,/opt/jdk1.8.0_211/jre/bin\""
+    echo "  --env        comma seperated list of Environemt variables"
+    echo "                 ex: \"HTTP_PROXY=http://proxy.example.com,HTTPS_PROXY=https://proxy.example.com\""
     echo ""
     echo "examples:"
     echo "  sh ./install.sh"
-    echo "  sh ./install.sh --include-paths \"/opt/jdk1.8.0_211/bin,/opt/jdk1.8.0_211/jre/bin\""
+    echo "  sh ./install.sh --paths \"/opt/jdk1.8.0_211/bin,/opt/jdk1.8.0_211/jre/bin\""
     echo "  sh ./install.sh --upgrade"
-    echo "  sh ./install.sh --upgrade --include-paths \"/opt/jdk1.8.0_211/bin,/opt/jdk1.8.0_211/jre/bin\""
+    echo "  sh ./install.sh --upgrade --paths \"/opt/jdk1.8.0_211/bin,/opt/jdk1.8.0_211/jre/bin\""
+    echo "  sh ./install.sh --env \"HTTP_PROXY=http://proxy.example.com,HTTPS_PROXY=https://proxy.example.com\""
     echo ""
 }
 
 
-for arg in "$@"
+UNKNOWN=()
+while [[ $# -gt 0 ]]
 do
-    case $arg in
-        -h|--help)
-        SHOW_HELP=1
-        shift
-        ;;
-        -u|--upgrade)
-        SHOULD_UPGRADE=1
-        shift
-        ;;
-        -p|--include-paths)
-        INCLUDE_PATHS="$2"
-        shift
-        shift
-        ;;
-        *)
-        echo "ERROR: invalid argument: $1"
-        print_usage
-        exit 128
-        ;;
-    esac
+key="$1"
+
+case $key in
+    --paths)
+    INCLUDE_PATHS="$2"
+    shift
+    shift
+    ;;
+    --env)
+    ENV_VARS="$2"
+    shift
+    shift
+    ;;
+    -h|--help)
+    SHOW_HELP=1
+    shift
+    ;;
+    -u|--upgrade)
+    SHOULD_UPGRADE=1
+    shift
+    ;;
+    *)
+    UNKNOWN+=("$1")
+    shift
+    ;;
+esac
 done
+
+if [ ! -z $UNKNOWN ]
+then 
+    echo "ERROR: unknown arguments: $UNKNOWN"
+    print_usage
+    exit 128
+fi
 
 if [ "$SHOW_HELP" -eq 1 ];
 then
@@ -293,19 +334,19 @@ cd $tmp_dir
 
 if [ "$SHOULD_UPGRADE" -eq 1 ];
 then
-    echo "Upgrading fluent-bit binary"
-    upgrade_fluent_bit
     echo "Upgrading sfagent binaries"
     upgrade_apm_agent
+    echo "Upgrading fluent-bit binary"
+    upgrade_fluent_bit
     echo "Upgrading sftrace agent"
     upgrade_sftrace_agent
 else
-    echo "Installing fluent-bit binary"
-    install_fluent_bit
     echo "Check jcmd installed"
     check_jcmd_installation
     echo "Installing APM agent"
     install_apm_agent
+    echo "Installing fluent-bit binary"
+    install_fluent_bit
     echo "Installing sftrace agent"
     install_sftrace_agent
 fi
