@@ -333,19 +333,19 @@ cd $tmp_dir
 
 if [ "$SHOULD_UPGRADE" -eq 1 ];
 then
-    echo "Upgrading sfagent binaries"
-    upgrade_apm_agent
     echo "Upgrading fluent-bit binary"
     upgrade_fluent_bit
+    echo "Upgrading sfagent binaries"
+    upgrade_apm_agent
     echo "Upgrading sftrace agent"
     upgrade_sftrace_agent
 else
     echo "Check jcmd installed"
     check_jcmd_installation
-    echo "Installing APM agent"
-    install_apm_agent
     echo "Installing fluent-bit binary"
     install_fluent_bit
+    echo "Installing APM agent"
+    install_apm_agent
     echo "Installing sftrace agent"
     install_sftrace_agent
 fi
