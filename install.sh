@@ -61,7 +61,7 @@ install_fluent_bit()
     | tr -d '"' \
     | xargs wget -q 
     mkdir -p /opt/td-agent-bit/bin && mkdir -p /etc/td-agent-bit/
-    tar -zxvf fluentbit.tar.gz >/dev/null && mv -f fluent-bit /opt/td-agent-bit/bin/td-agent-bit && mv -f GeoLite2-City.mmdb $TDAGENTCONFDIR && mv -f ua-parser $TDAGENTCONFDIR && mv -f uaparser /opt/td-agent-bit/bin/ 
+    tar -zxvf fluentbit.tar.gz >/dev/null && mv -f fluent-bit /opt/td-agent-bit/bin/td-agent-bit && mv -f GeoLite2-City.mmdb $TDAGENTCONFDIR && mv -f ua-parser $TDAGENTCONFDIR && mv -f uaparserserver /opt/td-agent-bit/bin/ 
     mv -f td-agent-bit.conf /etc/td-agent-bit/
     configure_logrotate_flb
     echo "Install fluent-bit completed"
@@ -92,7 +92,7 @@ upgrade_fluent_bit()
     | cut -d":" -f 2,3 \
     | tr -d '"' \
     | xargs wget -q
-    tar -zxvf fluentbit.tar.gz >/dev/null && mv -f fluent-bit /opt/td-agent-bit/bin/td-agent-bit && mv -f GeoLite2-City.mmdb $TDAGENTCONFDIR && mv -f ua-parser $TDAGENTCONFDIR && mv -f uaparser /opt/td-agent-bit/bin/
+    tar -zxvf fluentbit.tar.gz >/dev/null && mv -f fluent-bit /opt/td-agent-bit/bin/td-agent-bit && mv -f GeoLite2-City.mmdb $TDAGENTCONFDIR && mv -f ua-parser $TDAGENTCONFDIR && mv -f uaparserserver /opt/td-agent-bit/bin/
     mv -f td-agent-bit.conf /etc/td-agent-bit
     echo "Upgrade fluent-bit binary completed "
 }
