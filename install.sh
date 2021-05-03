@@ -100,9 +100,11 @@ upgrade_fluent_bit()
 upgrade_sftrace_agent()
 {
     wget $SFTRACE_AGENT_x86_64
+    mv -f /opt/sfagent/sftrace/java/elasticapm.properties .
     rm -rf /opt/sfagent/sftrace
     rm -rf /bin/sftrace
     tar -zxvf sftrace-agent.tar.gz >/dev/null && mv -f sftrace /opt/sfagent && mv -f /opt/sfagent/sftrace/sftrace /bin
+    mv -f elasticapm.properties /opt/sfagent/sftrace/java/
     echo "Upgrade sftrace java-agent and python-agent completed"
 
 }
