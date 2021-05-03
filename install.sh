@@ -3,13 +3,19 @@
 #set -x
 set -e
 
+# Default values of arguments
+SHOULD_UPGRADE=0
+SHOW_HELP=0
+INCLUDE_PATHS=""
+
 RELEASEURL="https://api.github.com/repos/snappyflow/apm-agent/releases/latest"
-FLUENTBIT_x86_64="https://github.com/snappyflow/apm-agent/releases/download/fluentbit.tar.gz.1.11/fluentbit.tar.gz"
 SFTRACE_AGENT_x86_64="https://github.com/snappyflow/apm-agent/releases/download/latest/sftrace-agent.tar.gz"
 AGENTDIR="/opt/sfagent"
 TDAGENTCONFDIR="/etc/td-agent-bit"
 ID=`cat /etc/os-release | grep -w "ID" | cut -d"=" -f2 | tr -d '"'`
 SERVICEFILE="/etc/systemd/system/sfagent.service"
+DEFAULTPATH="/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
+ENV_VARS=""
 
 
 configure_logrotate_flb()
@@ -48,9 +54,14 @@ install_fluent_bit()
     if [ "$ID" = "centos" ]; then
         yum install -y wget curl
     fi
-    wget $FLUENTBIT_x86_64
+    curl https://api.github.com/repos/snappyflow/apm-agent/releases?per_page=100 \
+    | grep -w "browser_download_url"|grep fluentbit \
+    | head -n 1 \
+    | cut -d":" -f 2,3 \
+    | tr -d '"' \
+    | xargs wget -q 
     mkdir -p /opt/td-agent-bit/bin && mkdir -p /etc/td-agent-bit/
-    tar -zxvf fluentbit.tar.gz >/dev/null && mv -f fluent-bit /opt/td-agent-bit/bin/td-agent-bit && mv -f GeoLite2-City.mmdb $TDAGENTCONFDIR
+    tar -zxvf fluentbit.tar.gz >/dev/null && mv -f fluent-bit /opt/td-agent-bit/bin/td-agent-bit && mv -f GeoLite2-City.mmdb $TDAGENTCONFDIR && mv -f uaparserserver /opt/td-agent-bit/bin/ 
     mv -f td-agent-bit.conf /etc/td-agent-bit/
     configure_logrotate_flb
     echo "Install fluent-bit completed"
@@ -75,8 +86,13 @@ upgrade_fluent_bit()
         systemctl stop td-agent-bit
         systemctl disable td-agent-bit
     fi
-    wget $FLUENTBIT_x86_64
-    tar -zxvf fluentbit.tar.gz >/dev/null && mv -f fluent-bit /opt/td-agent-bit/bin/td-agent-bit && mv -f GeoLite2-City.mmdb $TDAGENTCONFDIR
+    curl https://api.github.com/repos/snappyflow/apm-agent/releases?per_page=100 \
+    | grep -w "browser_download_url"|grep fluentbit \
+    | head -n 1 \
+    | cut -d":" -f 2,3 \
+    | tr -d '"' \
+    | xargs wget -q
+    tar -zxvf fluentbit.tar.gz >/dev/null && mv -f fluent-bit /opt/td-agent-bit/bin/td-agent-bit && mv -f GeoLite2-City.mmdb $TDAGENTCONFDIR && mv -f uaparserserver /opt/td-agent-bit/bin/
     mv -f td-agent-bit.conf /etc/td-agent-bit
     echo "Upgrade fluent-bit binary completed "
 }
@@ -121,10 +137,10 @@ if [ -d "$AGENTDIR" ]; then
     chown -R root:root /opt/sfagent
     create_sfagent_service
     systemctl restart sfagent
-    echo "Upgrading apm agent binaries completed"
+    echo "Upgrading sfagent binaries completed"
 else
     echo "directory $AGENTDIR doesn't exists"
-    install_services
+    install_apm_agent
 fi
 
 }
@@ -132,7 +148,7 @@ fi
 install_apm_agent()
 {
     echo "                         "
-    echo "Install APM Agent started"
+    echo "Install sfagent started"
     ARCH=`uname -m`
     rm -rf checksum* sfagent* mappings $AGENTDIR
     curl -sL $RELEASEURL \
@@ -163,7 +179,7 @@ EOF
     chown -R root:root /opt/sfagent
     create_sfagent_service
     systemctl restart sfagent
-    echo "Install APM Agent completed"
+    echo "Install sfagent completed"
     echo "                               "
 }
 
@@ -178,12 +194,46 @@ else
 fi
 }
 
+create_env_file()
+{
+
+echo "Create $AGENTDIR/env.conf file"
+touch $AGENTDIR/env.conf
+
+if [ ! -z "$INCLUDE_PATHS" ];
+then
+    echo "Extra paths to include in PATH - $INCLUDE_PATHS"
+    IFS=","
+    for v in $INCLUDE_PATHS
+    do
+        DEFAULTPATH="$DEFAULTPATH:$v"
+    done
+fi
+echo "Environment PATH=$DEFAULTPATH"
+echo "PATH=$DEFAULTPATH" >> $AGENTDIR/env.conf
+
+if [ ! -z "$ENV_VARS" ]
+then
+    echo "Append env vars to $AGENTDIR/env.conf"
+    IFS=","
+    for v in $ENV_VARS
+    do
+        echo $v >> $AGENTDIR/env.conf
+    done
+fi
+
+}
+
 create_sfagent_service()
 {
+
+# create env file 
+create_env_file
+
 echo "create sfagent service file"
 cat > "$SERVICEFILE" <<EOF
 [Unit]
-Description=snappyflow apm service
+Description=snappyflow apm agent service
 ConditionPathExists=$AGENTDIR/sfagent
 After=network.target
 
@@ -192,9 +242,12 @@ Type=simple
 Restart=on-failure
 RestartSec=10
 WorkingDirectory=$AGENTDIR
+EnvironmentFile=-$AGENTDIR/env.conf
 ExecStartPre=/bin/mkdir -p /var/log/sfagent
 ExecStartPre=/bin/chmod 755 /var/log/sfagent
-ExecStart=/bin/bash -c "$AGENTDIR/sfagent -config-file $AGENTDIR/config.yaml"
+ExecStartPre=/bin/bash -c -e "/opt/sfagent/sfagent -config-file /opt/sfagent/config.yaml -check-config"
+ExecStart=/bin/bash -c -e "/opt/sfagent/sfagent -config-file /opt/sfagent/config.yaml"
+
 StandardOutput=syslog
 StandardError=syslog
 SyslogIdentifier=sfagent
@@ -208,31 +261,96 @@ systemctl enable sfagent
 
 }
 
-install_services()
+print_usage()
 {
-
-install_fluent_bit
-check_jcmd_installation
-install_apm_agent
-install_sftrace_agent
-
+    echo ""
+    echo "usage of install.sh"
+    echo "  ./install.sh [-h|--help][-u|--upgrade][--paths \"path1,path2\"][--env \"ENV_VAR1=value1,ENV_VAR2=value2\"]"
+    echo ""
+    echo "  -h|--help    show usage information"
+    echo "  -u|--upgrade upgrade installed sfagent"
+    echo "  --paths      comma seperated list of paths to include in PATH of sfagent service"
+    echo "                 ex: \"/opt/jdk1.8.0_211/bin,/opt/jdk1.8.0_211/jre/bin\""
+    echo "  --env        comma seperated list of Environemt variables"
+    echo "                 ex: \"HTTP_PROXY=http://proxy.example.com,HTTPS_PROXY=https://proxy.example.com\""
+    echo ""
+    echo "examples:"
+    echo "  ./install.sh"
+    echo "  ./install.sh --paths \"/opt/jdk1.8.0_211/bin,/opt/jdk1.8.0_211/jre/bin\""
+    echo "  ./install.sh --upgrade"
+    echo "  ./install.sh --upgrade --paths \"/opt/jdk1.8.0_211/bin,/opt/jdk1.8.0_211/jre/bin\""
+    echo "  ./install.sh --env \"HTTP_PROXY=http://proxy.example.com,HTTPS_PROXY=https://proxy.example.com\""
+    echo ""
 }
 
+UNKNOWN=()
+while [[ $# -gt 0 ]]
+do
+key="$1"
+
+case $key in
+    --paths)
+    INCLUDE_PATHS="$2"
+    shift
+    shift
+    ;;
+    --env)
+    ENV_VARS="$2"
+    shift
+    shift
+    ;;
+    -h|--help)
+    SHOW_HELP=1
+    shift
+    ;;
+    -u|--upgrade)
+    SHOULD_UPGRADE=1
+    shift
+    ;;
+    *)
+    UNKNOWN+=("$1")
+    shift
+    ;;
+esac
+done
+
+if [ ! -z "$UNKNOWN" ]
+then 
+    echo "ERROR: unknown arguments: $UNKNOWN"
+    print_usage
+    exit 128
+fi
+
+if [ "$SHOW_HELP" -eq 1 ];
+then
+    print_usage
+    exit 0
+fi
+
 oldpath=`pwd`
-#cd /tmp
 tmp_dir=$(mktemp -d -t installsfagent-XXXXXXXXXX)
 cd $tmp_dir
 
-if [ "$1" = "upgrade" ];
+if [ "$SHOULD_UPGRADE" -eq 1 ];
 then
     echo "Upgrading fluent-bit binary"
     upgrade_fluent_bit
-    echo "Upgrading apm agent binaries"
+    echo "Upgrading sfagent binaries"
     upgrade_apm_agent
-    echo "Upgrading sftrace_agent"
+    echo "Upgrading sftrace agent"
     upgrade_sftrace_agent
 else
-    install_services
+    echo "Check jcmd installed"
+    check_jcmd_installation
+    echo "Installing fluent-bit binary"
+    install_fluent_bit
+    echo "Installing APM agent"
+    install_apm_agent
+    echo "Installing sftrace agent"
+    install_sftrace_agent
 fi
+
 cd $oldpath
 rm -rf $tmp_dir
+
+exit 0
