@@ -16,8 +16,9 @@ ID=`cat /etc/os-release | grep -w "ID" | cut -d"=" -f2 | tr -d '"'`
 SERVICEFILE="/etc/systemd/system/sfagent.service"
 DEFAULTPATH="/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
 ENV_VARS=""
+INITFILE="/etc/init.d/sfagent"
 
-
+SYSTEM_TYPE=`ps --no-headers -o comm 1`
 configure_logrotate_flb()
 {
     echo "Configure logrotate fluent-bit started"
@@ -54,12 +55,23 @@ install_fluent_bit()
     if [ "$ID" = "centos" ]; then
         yum install -y wget curl
     fi
-    curl https://api.github.com/repos/snappyflow/apm-agent/releases?per_page=100 \
-    | grep -w "browser_download_url"|grep fluentbit \
-    | head -n 1 \
-    | cut -d":" -f 2,3 \
-    | tr -d '"' \
-    | xargs wget -q 
+    
+    if [ "$SYSTEM_TYPE" = "systemd" ]; then
+        curl https://api.github.com/repos/snappyflow/apm-agent/releases?per_page=100 \
+        | grep -w "browser_download_url"|grep fluentbit \
+        | head -n 1 \
+        | cut -d":" -f 2,3 \
+        | tr -d '"' \
+        | xargs wget -q 
+    else
+        curl https://api.github.com/repos/snappyflow/apm-agent/releases?per_page=100 \
+        | grep -w "browser_download_url"|grep centos6-td-agent-bit \
+        | head -n 1 \
+        | cut -d":" -f 2,3 \
+        | tr -d '"' \
+        | xargs wget -q 
+
+    fi
     mkdir -p /opt/td-agent-bit/bin && mkdir -p /etc/td-agent-bit/
     tar -zxvf fluentbit.tar.gz >/dev/null && mv -f fluent-bit /opt/td-agent-bit/bin/td-agent-bit && mv -f GeoLite2-City.mmdb $TDAGENTCONFDIR && mv -f uaparserserver /opt/td-agent-bit/bin/ 
     mv -f td-agent-bit.conf /etc/td-agent-bit/
@@ -80,18 +92,28 @@ install_sftrace_agent()
 
 upgrade_fluent_bit()
 {
-    td_agent_bit_status=$(systemctl show -p ActiveState td-agent-bit | cut -d'=' -f2)
-    if [ "$td_agent_bit_status" = "active" ];
-    then
-        systemctl stop td-agent-bit
-        systemctl disable td-agent-bit
+    #td_agent_bit_status=$(systemctl show -p ActiveState td-agent-bit | cut -d'=' -f2)
+    #if [ "$td_agent_bit_status" = "active" ];
+    #then
+    #    systemctl stop td-agent-bit
+    #    systemctl disable td-agent-bit
+    #fi
+    if [ "$SYSTEM_TYPE" = "systemd" ]; then
+        curl https://api.github.com/repos/snappyflow/apm-agent/releases?per_page=100 \
+        | grep -w "browser_download_url"|grep fluentbit \
+        | head -n 1 \
+        | cut -d":" -f 2,3 \
+        | tr -d '"' \
+        | xargs wget -q 
+    else
+        curl https://api.github.com/repos/snappyflow/apm-agent/releases?per_page=100 \
+        | grep -w "browser_download_url"|grep centos6-td-agent-bit \
+        | head -n 1 \
+        | cut -d":" -f 2,3 \
+        | tr -d '"' \
+        | xargs wget -q 
+
     fi
-    curl https://api.github.com/repos/snappyflow/apm-agent/releases?per_page=100 \
-    | grep -w "browser_download_url"|grep fluentbit \
-    | head -n 1 \
-    | cut -d":" -f 2,3 \
-    | tr -d '"' \
-    | xargs wget -q
     tar -zxvf fluentbit.tar.gz >/dev/null && mv -f fluent-bit /opt/td-agent-bit/bin/td-agent-bit && mv -f GeoLite2-City.mmdb $TDAGENTCONFDIR && mv -f uaparserserver /opt/td-agent-bit/bin/
     mv -f td-agent-bit.conf /etc/td-agent-bit
     echo "Upgrade fluent-bit binary completed "
@@ -114,7 +136,7 @@ upgrade_apm_agent()
 if [ -d "$AGENTDIR" ]; then
     if [ -f "$SERVICEFILE" ]; then
         echo "Stop sfagent"
-        systemctl stop sfagent
+        service sfagent stop
     fi
     ARCH=`uname -m`
     echo "Backingup config.yaml"
@@ -137,8 +159,12 @@ if [ -d "$AGENTDIR" ]; then
     echo "Copying back config.yaml"
     cp -f _config_backup.yaml $AGENTDIR/config.yaml
     chown -R root:root /opt/sfagent
-    create_sfagent_service
-    systemctl restart sfagent
+    if [ "$SYSTEM_TYPE" = "systemd" ]; then
+        create_sfagent_service
+    else
+        create_sfagent_init_script
+    fi
+    service sfagent restart
     echo "Upgrading sfagent binaries completed"
 else
     echo "directory $AGENTDIR doesn't exists"
@@ -179,8 +205,12 @@ key:
 EOF
 
     chown -R root:root /opt/sfagent
-    create_sfagent_service
-    systemctl restart sfagent
+    if [ "$SYSTEM_TYPE" = "systemd" ]; then
+        create_sfagent_service
+    else
+        create_sfagent_init_script
+    fi
+    service sfagent restart
     echo "Install sfagent completed"
     echo "                               "
 }
@@ -261,6 +291,102 @@ EOF
 systemctl daemon-reload
 systemctl enable sfagent
 
+}
+
+create_sfagent_init_script()
+{
+
+echo "create sfagent init.d file"
+cat > "$INITFILE" <<'EOF'
+#!/bin/bash
+# sfagent daemon
+# chkconfig: - 20 80
+# description: EC2 instance SnappyFlow agent
+# processname: sfagent
+
+DAEMON_PATH="/opt/sfagent"
+
+NAME=sfagent
+DESC="My daemon description"
+PIDFILE=/var/run/$NAME.pid
+SCRIPTNAME=/etc/init.d/sfagent
+
+LOG_PATH=/var/log/sfagent/sfagent.log
+
+DAEMON=/opt/sfagent/sfagent
+DAEMONOPTS="-config /opt/sfagent/config.yaml"
+
+if [[ $# -eq 0 ]]; then
+    echo "Usage: $0 {start|stop|restart}"
+    exit 1
+else
+    COMMAND="$1"
+fi
+
+case $COMMAND in
+start)
+        printf "%-50s" "Starting $NAME..."
+        if [[ -f $PIDFILE ]]; then
+                PID=`cat $PIDFILE`
+                if [[ "`ps axf | grep ${PID} | grep -v grep`" ]]; then
+                        echo "sfagent is already running"
+                        exit 0
+                fi
+        fi
+        cd $DAEMON_PATH
+        CMD="$DAEMON $DAEMONOPTS > /dev/null 2>&1"
+        echo $CMD
+        $CMD &
+        if [ $? -eq 0 ]; then
+                printf "%s\n" "Ok"
+                echo $! > $PIDFILE
+        else
+                printf "%s\n" "Fail. Check logs $LOG_PATH"
+                exit 1
+        fi
+;;
+status)
+        printf "%-50s" "Checking $NAME..."
+        if [[ -f $PIDFILE ]]; then
+                PID=`cat $PIDFILE`
+                if [[ -z "`ps axf | grep ${PID} | grep -v grep`" ]]; then
+                        printf "%s\n" "Process dead but pidfile exists"
+                else
+                        echo "Running"
+                fi
+        else
+                printf "%s\n" "Service not running"
+        fi
+;;
+stop)
+        printf "%-50s" "Stopping $NAME"
+        if [[ -f $PIDFILE ]]; then
+                PID=`cat $PIDFILE`
+                kill -HUP $PID
+                killall -w td-agent-bit
+                printf "%s\n" "Ok"
+                rm -f $PIDFILE
+                exit 0
+        else
+                printf "%s\n" "already stopped"
+                exit 0
+        fi
+;;
+
+restart)
+        $0 stop
+        $0 start
+;;
+
+*)
+        echo "Usage: $0 {status|start|stop|restart}"
+        exit 1
+esac
+
+EOF
+
+chmod +x "$INITFILE"
+echo "sfagent init script created"
 }
 
 print_usage()
