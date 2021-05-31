@@ -8,7 +8,7 @@ SHOULD_UPGRADE=0
 SHOW_HELP=0
 INCLUDE_PATHS=""
 
-RELEASEURL="https://api.github.com/repos/snappyflow/apm-agent/releases/latest"
+RELEASEURL="https://api.github.com/repos/snappyflow/apm-agent/releases/42185876"
 SFTRACE_AGENT_x86_64="https://github.com/snappyflow/apm-agent/releases/download/latest/sftrace-agent.tar.gz"
 AGENTDIR="/opt/sfagent"
 TDAGENTCONFDIR="/etc/td-agent-bit"
