@@ -139,8 +139,10 @@ if [ -d "$AGENTDIR" ]; then
         service sfagent stop
     fi
     ARCH=`uname -m`
-    echo "Backingup config.yaml"
+    echo "Backingup config.yaml and customer scripts"
     cp -f $AGENTDIR/config.yaml _config_backup.yaml
+    [ -f $AGENTDIR/mappings/custom_logging_plugins.yaml ] && cp $AGENTDIR/mappings/custom_logging_plugins.yaml _custom_logging_backup.yaml
+    [ -f $AGENTDIR/scripts/custom_scripts.lua ] && cp $AGENTDIR/scripts/custom_scripts.lua _custom_script_backup.yaml
     rm -rf checksum* sfagent* mappings
     curl -sL $RELEASEURL \
     | grep -w "browser_download_url" \
@@ -156,8 +158,10 @@ if [ -d "$AGENTDIR" ]; then
     mv -f scripts/* $AGENTDIR/scripts/
     mv -f certs/* $AGENTDIR/certs/
     mv -f config.yaml.sample $AGENTDIR/config.yaml.sample
-    echo "Copying back config.yaml"
+    echo "Copying back config.yaml and customer scripts"
     cp -f _config_backup.yaml $AGENTDIR/config.yaml
+    [ -f _custom_logging_backup.yaml ] && yes | cp _custom_logging_backup.yaml $AGENTDIR/mappings/custom_logging_plugins.yaml
+    [ -f _custom_script_backup.yaml ] && yes | cp _custom_script_backup.yaml $AGENTDIR/scripts/custom_scripts.lua
     chown -R root:root /opt/sfagent
     if [ "$SYSTEM_TYPE" = "systemd" ]; then
         create_sfagent_service
