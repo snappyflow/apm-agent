@@ -472,6 +472,10 @@ then
     echo "Upgrading sftrace agent"
     upgrade_sftrace_agent
 else
+    if [ "$EUID" -ne 0 ]; then
+        echo "Sorry, You dont have privilages."
+        exit 0
+    fi
     echo "Check jcmd installed"
     check_jcmd_installation
     echo "Installing fluent-bit binary"
