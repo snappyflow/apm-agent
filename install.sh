@@ -142,11 +142,13 @@ if [ -d "$AGENTDIR" ]; then
     echo "Backingup config.yaml"
     cp -f $AGENTDIR/config.yaml _config_backup.yaml
     rm -rf checksum* sfagent* mappings
-    curl -sL $RELEASEURL \
-    | grep -w "browser_download_url" \
-    | cut -d":" -f 2,3 \
-    | tr -d '"' \
-    | xargs wget -q 
+    
+    curl https://api.github.com/repos/snappyflow/apm-agent/releases?per_page=100 \
+        | grep -w "browser_download_url"|grep master \
+        | head -n 3 \
+        | cut -d":" -f 2,3 \
+        | tr -d '"' \
+        | xargs wget -q
     ls -l sfagent* checksum* >/dev/null
     tar -zxvf sfagent*linux_$ARCH.tar.gz >/dev/null
     mkdir -p $AGENTDIR/certs
@@ -179,11 +181,12 @@ install_apm_agent()
     echo "Install sfagent started"
     ARCH=`uname -m`
     rm -rf checksum* sfagent* mappings $AGENTDIR
-    curl -sL $RELEASEURL \
-    | grep -w "browser_download_url" \
-    | cut -d":" -f 2,3 \
-    | tr -d '"' \
-    | xargs wget -q
+    curl https://api.github.com/repos/snappyflow/apm-agent/releases?per_page=100 \
+        | grep -w "browser_download_url"|grep master \
+        | head -n 3 \
+        | cut -d":" -f 2,3 \
+        | tr -d '"' \
+        | xargs wget -q
     ls -l sfagent* checksum* >/dev/null
     tar -zxvf sfagent*linux_$ARCH.tar.gz >/dev/null
     mkdir -p $AGENTDIR
