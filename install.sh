@@ -473,7 +473,7 @@ then
     upgrade_sftrace_agent
 else
     if [ "$EUID" -ne 0 ]; then
-        echo "Sorry, You dont have privilages."
+        echo "Need to have root previlege to proceed ith installation."
         exit 0
     fi
     echo "Check jcmd installed"
