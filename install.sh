@@ -463,6 +463,11 @@ oldpath=`pwd`
 tmp_dir=$(mktemp -d -t installsfagent-XXXXXXXXXX)
 cd $tmp_dir
 
+if [ "$EUID" -ne 0 ]; then
+    echo "Need to have root previlege to proceed with installation."
+    exit 0
+fi
+
 if [ "$SHOULD_UPGRADE" -eq 1 ];
 then
     echo "Upgrading fluent-bit binary"
@@ -472,10 +477,6 @@ then
     echo "Upgrading sftrace agent"
     upgrade_sftrace_agent
 else
-    if [ "$EUID" -ne 0 ]; then
-        echo "Need to have root previlege to proceed with installation."
-        exit 0
-    fi
     echo "Check jcmd installed"
     check_jcmd_installation
     echo "Installing fluent-bit binary"
