@@ -28,7 +28,7 @@ examples:
 
 ```
 
-## Install commands (run as root user with sudo privileges)
+## Install commands (run as root user with sudo privileges)( release branch)
 
 ```
 Download script using Wget:
@@ -42,6 +42,21 @@ sudo ./install.sh
 
 Yes, you can also run
 curl -s https://raw.githubusercontent.com/snappyflow/apm-agent/master/install.sh | bash
+```
+
+## Install commands (run as root user with sudo privileges)( master branch)
+```
+Download script using Wget:
+wget https://raw.githubusercontent.com/snappyflow/apm-agent/dev/install.sh
+
+Download script using curl
+curl -fsSL -o install.sh https://raw.githubusercontent.com/snappyflow/apm-agent/dev/install.sh
+
+chmod +x install.sh
+sudo ./install.sh
+
+Yes, you can also run
+curl -s https://raw.githubusercontent.com/snappyflow/apm-agent/dev/install.sh | bash
 ```
 
 ## Upgrade commands (run as root user with sudo privileges)
