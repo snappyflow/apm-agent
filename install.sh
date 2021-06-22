@@ -490,4 +490,7 @@ fi
 cd $oldpath
 rm -rf $tmp_dir
 
+sleep 1
+echo "Done"
 exit 0
+
