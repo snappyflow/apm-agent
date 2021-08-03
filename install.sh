@@ -73,7 +73,7 @@ install_fluent_bit()
 
     fi
     mkdir -p /opt/td-agent-bit/bin && mkdir -p /etc/td-agent-bit/
-    tar -zxvf fluentbit.tar.gz >/dev/null && mv -f fluent-bit /opt/td-agent-bit/bin/td-agent-bit && mv -f GeoLite2-City.mmdb $TDAGENTCONFDIR && mv -f uaparserserver /opt/td-agent-bit/bin/ 
+    tar -zxvf fluentbit.tar.gz >/dev/null && mv -f fluent-bit /opt/td-agent-bit/bin/td-agent-bit && mv -f GeoLite2-City.mmdb $TDAGENTCONFDIR && mv -f uaparserserver /opt/td-agent-bit/bin/ && mv -f url-normalizer /opt/td-agent-bit/bin/
     mv -f td-agent-bit.conf /etc/td-agent-bit/
     configure_logrotate_flb
     echo "Install fluent-bit completed"
@@ -114,7 +114,7 @@ upgrade_fluent_bit()
         | xargs wget -q 
 
     fi
-    tar -zxvf fluentbit.tar.gz >/dev/null && mv -f fluent-bit /opt/td-agent-bit/bin/td-agent-bit && mv -f GeoLite2-City.mmdb $TDAGENTCONFDIR && mv -f uaparserserver /opt/td-agent-bit/bin/
+    tar -zxvf fluentbit.tar.gz >/dev/null && mv -f fluent-bit /opt/td-agent-bit/bin/td-agent-bit && mv -f GeoLite2-City.mmdb $TDAGENTCONFDIR && mv -f uaparserserver /opt/td-agent-bit/bin/ && mv -f url-normalizer /opt/td-agent-bit/bin/
     mv -f td-agent-bit.conf /etc/td-agent-bit
     echo "Upgrade fluent-bit binary completed "
 }
@@ -141,9 +141,12 @@ if [ -d "$AGENTDIR" ]; then
     ARCH=`uname -m`
     echo "Backingup config.yaml and customer scripts"
     cp -f $AGENTDIR/config.yaml _config_backup.yaml
+    #Creation of normalization dir to be removed in future once older agents are upgraded
+    mkdir -p $AGENTDIR/normalization
+    [ -f $AGENTDIR/normalization/config.yaml ] && cp $AGENTDIR/normalization/config.yaml _norm_config_backup.yaml
     [ -f $AGENTDIR/mappings/custom_logging_plugins.yaml ] && cp $AGENTDIR/mappings/custom_logging_plugins.yaml _custom_logging_backup.yaml
     [ -f $AGENTDIR/scripts/custom_scripts.lua ] && cp $AGENTDIR/scripts/custom_scripts.lua _custom_script_backup.yaml
-    rm -rf checksum* sfagent* mappings
+    rm -rf checksum* sfagent* mappings normalization
     curl -sL $RELEASEURL \
     | grep -w "browser_download_url" \
     | cut -d":" -f 2,3 \
@@ -157,9 +160,11 @@ if [ -d "$AGENTDIR" ]; then
     mv -f mappings/* $AGENTDIR/mappings/
     mv -f scripts/* $AGENTDIR/scripts/
     mv -f certs/* $AGENTDIR/certs/
+    mv -f normalization/* $AGENTDIR/normalization/
     mv -f config.yaml.sample $AGENTDIR/config.yaml.sample
     echo "Copying back config.yaml and customer scripts"
     cp -f _config_backup.yaml $AGENTDIR/config.yaml
+    [ -f _norm_config_backup.yaml ] && yes | cp _norm_config_backup.yaml $AGENTDIR/normalization/config.yaml
     [ -f _custom_logging_backup.yaml ] && yes | cp _custom_logging_backup.yaml $AGENTDIR/mappings/custom_logging_plugins.yaml
     [ -f _custom_script_backup.yaml ] && yes | cp _custom_script_backup.yaml $AGENTDIR/scripts/custom_scripts.lua
     chown -R root:root /opt/sfagent
@@ -182,7 +187,7 @@ install_apm_agent()
     echo "                         "
     echo "Install sfagent started"
     ARCH=`uname -m`
-    rm -rf checksum* sfagent* mappings $AGENTDIR
+    rm -rf checksum* sfagent* mappings normalization $AGENTDIR
     curl -sL $RELEASEURL \
     | grep -w "browser_download_url" \
     | cut -d":" -f 2,3 \
@@ -194,11 +199,13 @@ install_apm_agent()
     mkdir -p $AGENTDIR/mappings
     mkdir -p $AGENTDIR/scripts
     mkdir -p $AGENTDIR/certs
+    mkdir -p $AGENTDIR/normalization
     mv sfagent $AGENTDIR
     mv jolokia.jar $AGENTDIR
     mv mappings $AGENTDIR/.
     mv scripts $AGENTDIR/.
     mv certs $AGENTDIR/.
+    mv normalization $AGENTDIR/.
     mv config.yaml.sample $AGENTDIR/config.yaml.sample
     cat > $AGENTDIR/config.yaml <<EOF
 agent:
@@ -493,4 +500,3 @@ rm -rf $tmp_dir
 sleep 1
 echo "Done"
 exit 0
-
