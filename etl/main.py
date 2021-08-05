@@ -8,7 +8,7 @@ import sys
 
 def main():
     config = {}
-    configFile = "/home/ubuntu/python_script/etl/config.yaml"
+    configFile = "<Path to config file>"
     try:
         # if os.path.isfile("config.yaml"):
         with open(configFile) as file:
