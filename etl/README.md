@@ -30,7 +30,7 @@ metrics:
 Note:
 
 * If we want to add another plugin to this, add the plugin details in the config file under the plugins section and create your new input file in the input folder. 
-* The input python file name should always be same as the plugin name.
+* The input python file name should always be same as the plugin name. In this case plugin name is "etl".
 * There should be a fuction named "work" with config parameter which will be invoked when we run the script. 
 * The work fuction should return list of dictionary objects.
 
