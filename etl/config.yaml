@@ -1,0 +1,15 @@
+key: C+80cT507TSaIp1UVvSrlJXr1E/tSvsRdz9urEgMFyDfdnHGcuAX04SrjBRklEYngIbN5nlIfiDwiqmc2erCw+LU65bVASQG7iIhPjtmqlS5mvzwzVqgw3EL95Hz1jvr8Wheq+jbiktBNOsO6dmLhEA+6S3xZu5ykb1CE8gQRJGN+VJ6fw1C2v0EZ1FAJFctC6aoFeZlAMKl7UUPrIIQ8K5BXGGa6rcpee12jRIID6tcQCsNEgNzXh3qrj4nDM9ma7pLzQDEFjluUHV351MICE4aEhEhuQKYjiK8xzvAuDpil+qcYj7iwbb2C7q6GV1u0B6KfJmKc2XkmSEePCjfWcvWEJt2TprjzK7L5RAkcknRn3cyS3DY8VFL4Q/OlI3V4nFaXwEd8EYb12v7+LsytA==
+tags:
+  Name: etl-test-veeresh
+  appName: etl-test-veeresh
+  projectName: apm-server-veeresh
+metrics:
+  plugins:
+    - name: etl
+      enabled: true
+      url:
+        job: 'https://34.208.55.34/snappyflow/dashboardcomponent/BkwnKCAedKEjOe7G?duration=5m' 
+        stage: 'https://34.208.55.34/snappyflow/dashboardcomponent/P6T7auYwUAlYtWD9?duration=5m'
+        task: 'https://34.208.55.34/snappyflow/dashboardcomponent/wQYulKTNNHHPd99q?duration=5m'
+        authkey: Bup4COgjYc6RSFzE
+      buffer_path: /home/ubuntu/python_script/etl/bufferdata.json
