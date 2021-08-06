@@ -20,3 +20,5 @@ class Constants:
   TYPE =  "type"
   USERNAME =  "username"
   decrypt_key =  "SnappyFlow123456"
+  TOKEN = 'token'
+
