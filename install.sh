@@ -245,7 +245,7 @@ then
     done
 fi
 echo "Environment PATH=$DEFAULTPATH"
-echo "PATH=$DEFAULTPATH" >> $AGENTDIR/env.conf
+echo "PATH=$DEFAULTPATH" > $AGENTDIR/env.conf
 
 if [ ! -z "$ENV_VARS" ]
 then
