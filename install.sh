@@ -7,7 +7,7 @@ set -e
 SHOULD_UPGRADE=0
 SHOW_HELP=0
 INCLUDE_PATHS=""
-
+INSTALL_MAT=0
 RELEASEURL="https://api.github.com/repos/snappyflow/apm-agent/releases/latest"
 SFTRACE_AGENT_x86_64="https://github.com/snappyflow/apm-agent/releases/download/latest/sftrace-agent.tar.gz"
 AGENTDIR="/opt/sfagent"
@@ -117,6 +117,20 @@ upgrade_fluent_bit()
     tar -zxvf fluentbit.tar.gz >/dev/null && mv -f fluent-bit /opt/td-agent-bit/bin/td-agent-bit && mv -f GeoLite2-City.mmdb $TDAGENTCONFDIR && mv -f uaparserserver /opt/td-agent-bit/bin/ && mv -f url-normalizer /opt/td-agent-bit/bin/
     mv -f td-agent-bit.conf /etc/td-agent-bit
     echo "Upgrade fluent-bit binary completed "
+}
+install_eclipse_mat()
+{   echo "Checking Eclipse MAT is already installed"
+    DIR="/opt/sfagent/Eclipse_Mat_File"
+    if [ -d "$DIR" ]; then
+    # Take action if $DIR exists. #
+    echo "Eclipse MAT is already installed in ${DIR}..."
+    else
+    echo "Downloading Eclipse MAT"
+    mkdir -p /opt/sfagent/Eclipse_Mat_File
+    wget -O /opt/sfagent/Eclipse_Mat_MemoryAnalyzer.zip http://eclipse.stu.edu.tw/mat/1.9.0/rcp/MemoryAnalyzer-1.9.0.20190605-linux.gtk.x86_64.zip && \
+    unzip /opt/sfagent/Eclipse_Mat_MemoryAnalyzer.zip -d /opt/sfagent/Eclipse_Mat_File/
+    echo "Eclipse MAT is successfully installed"
+    fi     
 }
 
 upgrade_sftrace_agent()
@@ -415,8 +429,10 @@ print_usage()
     echo ""
     echo "examples:"
     echo "  ./install.sh"
+    echo "  ./install.sh --install-mat"
     echo "  ./install.sh --paths \"/opt/jdk1.8.0_211/bin,/opt/jdk1.8.0_211/jre/bin\""
     echo "  ./install.sh --upgrade"
+    echo "  ./install.sh --upgrade --install-mat"
     echo "  ./install.sh --upgrade --paths \"/opt/jdk1.8.0_211/bin,/opt/jdk1.8.0_211/jre/bin\""
     echo "  ./install.sh --env \"HTTP_PROXY=http://proxy.example.com,HTTPS_PROXY=https://proxy.example.com\""
     echo ""
@@ -444,6 +460,10 @@ case $key in
     ;;
     -u|--upgrade)
     SHOULD_UPGRADE=1
+    shift
+    ;;
+    --install-mat)
+    INSTALL_MAT=1
     shift
     ;;
     *)
@@ -474,6 +494,11 @@ if [ "$EUID" -ne 0 ]; then
     echo "Need to have root previlege to proceed with installation."
     exit 0
 fi
+
+if [ "$INSTALL_MAT" -eq 1 ]; 
+then
+    install_eclipse_mat
+fi    
 
 if [ "$SHOULD_UPGRADE" -eq 1 ];
 then
