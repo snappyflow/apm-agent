@@ -127,7 +127,7 @@ install_eclipse_mat()
     else
     echo "Downloading Eclipse MAT"
     mkdir -p /opt/sfagent/Eclipse_Mat_File
-    wget -O /opt/sfagent/Eclipse_Mat_MemoryAnalyzer.zip http://eclipse.stu.edu.tw/mat/1.9.0/rcp/MemoryAnalyzer-1.9.0.20190605-linux.gtk.x86_64.zip && \
+    wget -O /opt/sfagent/Eclipse_Mat_MemoryAnalyzer.zip http://eclipse.stu.edu.tw/mat/1.10.0/rcp/MemoryAnalyzer-1.10.0.20200225-linux.gtk.x86_64.zip && \
     unzip /opt/sfagent/Eclipse_Mat_MemoryAnalyzer.zip -d /opt/sfagent/Eclipse_Mat_File/
     echo "Eclipse MAT is successfully installed"
     fi     
