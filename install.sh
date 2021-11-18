@@ -10,6 +10,7 @@ INCLUDE_PATHS=""
 INSTALL_MAT=0
 RELEASEURL="https://api.github.com/repos/snappyflow/apm-agent/releases/latest"
 SFTRACE_AGENT_x86_64="https://github.com/snappyflow/apm-agent/releases/download/latest/sftrace-agent.tar.gz"
+FLUENT_CENTOS_6_BUILD="https://github.com/snappyflow/apm-agent/releases/download/centos6-td-agent-bit/fluentbit.tar.gz"
 AGENTDIR="/opt/sfagent"
 TDAGENTCONFDIR="/etc/td-agent-bit"
 ID=`cat /etc/os-release | grep -w "ID" | cut -d"=" -f2 | tr -d '"'`
@@ -64,13 +65,7 @@ install_fluent_bit()
         | tr -d '"' \
         | xargs wget -q 
     else
-        curl https://api.github.com/repos/snappyflow/apm-agent/releases?per_page=100 \
-        | grep -w "browser_download_url"|grep centos6-td-agent-bit \
-        | head -n 1 \
-        | cut -d":" -f 2,3 \
-        | tr -d '"' \
-        | xargs wget -q 
-
+        wget $FLUENT_CENTOS_6_BUILD
     fi
     mkdir -p /opt/td-agent-bit/bin && mkdir -p /etc/td-agent-bit/
     tar -zxvf fluentbit.tar.gz >/dev/null && mv -f fluent-bit /opt/td-agent-bit/bin/td-agent-bit && mv -f GeoLite2-City.mmdb $TDAGENTCONFDIR
@@ -108,13 +103,7 @@ upgrade_fluent_bit()
         | tr -d '"' \
         | xargs wget -q 
     else
-        curl https://api.github.com/repos/snappyflow/apm-agent/releases?per_page=100 \
-        | grep -w "browser_download_url"|grep centos6-td-agent-bit \
-        | head -n 1 \
-        | cut -d":" -f 2,3 \
-        | tr -d '"' \
-        | xargs wget -q 
-
+        wget $FLUENT_CENTOS_6_BUILD
     fi
     tar -zxvf fluentbit.tar.gz >/dev/null && mv -f fluent-bit /opt/td-agent-bit/bin/td-agent-bit && mv -f GeoLite2-City.mmdb $TDAGENTCONFDIR
     [ -f url-normalizer ] && yes | mv -f url-normalizer /opt/td-agent-bit/bin/
