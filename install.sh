@@ -347,6 +347,15 @@ start)
                 printf "%s\n" "Fail. Check logs $LOG_PATH"
                 exit 1
         fi
+        CMD1="update-rc.d sfagent defaults"
+        echo $CMD1
+        $CMD1 &
+        if [ $? -eq 0 ]; then
+                printf "\n" "symbolic link added for sfagent"
+        else
+                printf "%s\n" "Failed while adding symbolic link for sfagent. Check logs $LOG_PATH"
+                exit 1
+        fi
 ;;
 status)
         printf "%-50s" "Checking $NAME..."
