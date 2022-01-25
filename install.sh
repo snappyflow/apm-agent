@@ -1,7 +1,8 @@
 #!/bin/bash
 
-#set -x
+# set -x
 set -e
+set -o pipefail
 
 # Default values of arguments
 SHOULD_UPGRADE=0
@@ -12,17 +13,27 @@ RELEASEURL="https://api.github.com/repos/snappyflow/apm-agent/releases/latest"
 SFTRACE_AGENT_x86_64="https://github.com/snappyflow/apm-agent/releases/download/latest/sftrace-agent.tar.gz"
 FLUENT_CENTOS_6_BUILD="https://github.com/snappyflow/apm-agent/releases/download/centos6-td-agent-bit/fluentbit.tar.gz"
 AGENTDIR="/opt/sfagent"
+AGENTDIR_BKP="/opt/sfagent_bkp"
 TDAGENTCONFDIR="/etc/td-agent-bit"
-ID=`cat /etc/os-release | grep -w "ID" | cut -d"=" -f2 | tr -d '"'`
+ID=$(cat /etc/os-release | grep -w "ID" | cut -d"=" -f2 | tr -d '"')
 SERVICEFILE="/etc/systemd/system/sfagent.service"
 DEFAULTPATH="/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
 ENV_VARS=""
 INITFILE="/etc/init.d/sfagent"
+ARCH=$(uname -m)
+SYSTEM_TYPE=$(ps --no-headers -o comm 1)
+AGENT_BUILD_INFO_URL="https://127.0.0.1:8585/buildinfo"
+AGENT_CERT="$AGENTDIR/certs/sfagent.pem"
+AGENT_CERT_KEY="$AGENTDIR/certs/sfagent-key.pem"
 
-SYSTEM_TYPE=`ps --no-headers -o comm 1`
+logit() 
+{
+    echo "[$(date +%d/%m/%Y-%T)] - ${*}"
+}
+
 configure_logrotate_flb()
 {
-    echo "Configure logrotate fluent-bit started"
+    logit "configure logrotate for fluent-bit"
     if [ "$ID" = "debian" ] || [ "$ID" = "ubuntu" ]; then
         apt install -qy logrotate &>/dev/null
     fi
@@ -42,14 +53,13 @@ configure_logrotate_flb()
 	rotate 7
 }
 EOF
-  echo "Configure logrotate fluent-bit completed"
+  logit "configure logrotate for fluent-bit completed"
 }
 
 
 install_fluent_bit()
 {
-    echo "                                           "
-    echo "Install fluent-bit started "
+    logit "install fluent-bit"
     if [ "$ID" = "debian" ] || [ "$ID" = "ubuntu" ]; then
          apt-get install -y -q wget curl
     fi
@@ -58,33 +68,34 @@ install_fluent_bit()
     fi
     
     if [ "$SYSTEM_TYPE" = "systemd" ]; then
-        curl https://api.github.com/repos/snappyflow/apm-agent/releases?per_page=100 \
+        logit "download latest fluent-bit release"
+        curl -sL https://api.github.com/repos/snappyflow/apm-agent/releases?per_page=100 \
         | grep -w "browser_download_url"|grep fluentbit \
         | head -n 1 \
         | cut -d":" -f 2,3 \
         | tr -d '"' \
         | xargs wget -q 
+        logit "download latest fluent-bit release done"
     else
-        wget $FLUENT_CENTOS_6_BUILD
+        logit "download centos 6 fluent-bit release"
+        wget -q $FLUENT_CENTOS_6_BUILD
+        logit "download centos 6 fluent-bit release done"
     fi
     mkdir -p /opt/td-agent-bit/bin && mkdir -p /etc/td-agent-bit/
     tar -zxvf fluentbit.tar.gz >/dev/null && mv -f fluent-bit /opt/td-agent-bit/bin/td-agent-bit && mv -f GeoLite2-City.mmdb $TDAGENTCONFDIR
-    [ -f url-normalizer ] && yes | mv -f url-normalizer /opt/td-agent-bit/bin/
-    [ -f uaparserserver ] && yes | mv -f uaparserserver /opt/td-agent-bit/bin/
+    [ -f url-normalizer ] && mv -f url-normalizer /opt/td-agent-bit/bin/
+    [ -f uaparserserver ] && mv -f uaparserserver /opt/td-agent-bit/bin/
     mv -f td-agent-bit.conf /etc/td-agent-bit/
     configure_logrotate_flb
-    echo "Install fluent-bit completed"
-    echo "                             "
+    logit "install fluent-bit completed"
 }
 
 install_sftrace_agent()
 {
-    echo "                                           "
-    echo "Install sftrace java-agent and python-agent started "
-    wget $SFTRACE_AGENT_x86_64
+    logit "install sftrace java-agent and python-agent"
+    wget -q $SFTRACE_AGENT_x86_64
     tar -zxvf sftrace-agent.tar.gz >/dev/null && mv -f sftrace /opt/sfagent && mv -f /opt/sfagent/sftrace/sftrace /bin && mv -f /opt/sfagent/sftrace/java/sftrace /opt/sfagent/sftrace
-    echo "Install sftrace java-agent and python-agent completed"
-    echo "                             "
+    logit "install sftrace java-agent and python-agent completed"
 }
 
 upgrade_fluent_bit()
@@ -95,112 +106,191 @@ upgrade_fluent_bit()
     #    systemctl stop td-agent-bit
     #    systemctl disable td-agent-bit
     #fi
+    [ -d /opt/td-agent-bit/bin_bkp ] && logit "remove old backup directories /opt/td-agent-bit/bin_bkp" && rm -rf /opt/td-agent-bit/bin_bkp
+    cp -R /opt/td-agent-bit/bin /opt/td-agent-bit/bin_bkp
     if [ "$SYSTEM_TYPE" = "systemd" ]; then
-        curl https://api.github.com/repos/snappyflow/apm-agent/releases?per_page=100 \
+        logit "download latest fluent-bit release"
+        curl -sL https://api.github.com/repos/snappyflow/apm-agent/releases?per_page=100 \
         | grep -w "browser_download_url"|grep fluentbit \
         | head -n 1 \
         | cut -d":" -f 2,3 \
         | tr -d '"' \
         | xargs wget -q 
+        logit "download latest fluent-bit release done"
     else
-        wget $FLUENT_CENTOS_6_BUILD
+        logit "download censtos 6 build for fluent-bit"
+        wget -q $FLUENT_CENTOS_6_BUILD
+        logit "download centos 6 fluent-bit release done"
     fi
     tar -zxvf fluentbit.tar.gz >/dev/null && mv -f fluent-bit /opt/td-agent-bit/bin/td-agent-bit && mv -f GeoLite2-City.mmdb $TDAGENTCONFDIR
-    [ -f url-normalizer ] && yes | mv -f url-normalizer /opt/td-agent-bit/bin/
-    [ -f uaparserserver ] && yes | mv -f uaparserserver /opt/td-agent-bit/bin/
+    [ -f url-normalizer ] && mv -f url-normalizer /opt/td-agent-bit/bin/
+    [ -f uaparserserver ] && mv -f uaparserserver /opt/td-agent-bit/bin/
     mv -f td-agent-bit.conf /etc/td-agent-bit
-    echo "Upgrade fluent-bit binary completed "
+    logit "upgrade fluent-bit completed"
 }
+
 install_eclipse_mat()
-{   echo "Checking Eclipse MAT is already installed"
+{   
+    logit "checking Eclipse MAT installed"
     DIR="/opt/sfagent/Eclipse_Mat_File"
+    MAT_URL="https://github.com/snappyflow/apm-agent/raw/master/MemoryAnalyzer-1.10.0.20200225-linux.gtk.x86_64.zip"
     if [ -d "$DIR" ]; then
-    # Take action if $DIR exists. #
-    echo "Eclipse MAT is already installed in ${DIR}..."
+        # Take action if $DIR exists. #
+        logit "eclipse MAT is already installed in ${DIR}..."
     else
-    echo "Downloading Eclipse MAT"
-    mkdir -p /opt/sfagent/Eclipse_Mat_File
-    wget -O /opt/sfagent/Eclipse_Mat_MemoryAnalyzer.zip https://github.com/snappyflow/apm-agent/raw/master/MemoryAnalyzer-1.10.0.20200225-linux.gtk.x86_64.zip && \
-    unzip /opt/sfagent/Eclipse_Mat_MemoryAnalyzer.zip -d /opt/sfagent/Eclipse_Mat_File/
-    echo "Eclipse MAT is successfully installed"
+        logit "downloading Eclipse MAT"
+        mkdir -p /opt/sfagent/Eclipse_Mat_File
+        wget -q -O /opt/sfagent/Eclipse_Mat_MemoryAnalyzer.zip $MAT_URL && unzip /opt/sfagent/Eclipse_Mat_MemoryAnalyzer.zip -d /opt/sfagent/Eclipse_Mat_File/
+        logit "Eclipse MAT is successfully installed"
     fi     
 }
 
 upgrade_sftrace_agent()
 {
-    wget $SFTRACE_AGENT_x86_64
+    wget -q $SFTRACE_AGENT_x86_64
+    logit "download latest sftrace agent done"
     mv -f /opt/sfagent/sftrace/java/elasticapm.properties .
     rm -rf /opt/sfagent/sftrace
     rm -rf /bin/sftrace
     tar -zxvf sftrace-agent.tar.gz >/dev/null && mv -f sftrace /opt/sfagent && mv -f /opt/sfagent/sftrace/sftrace /bin && mv -f /opt/sfagent/sftrace/java/sftrace /opt/sfagent/sftrace
     mv -f elasticapm.properties /opt/sfagent/sftrace/java/
-    echo "Upgrade sftrace java-agent and python-agent completed"
-
+    logit "upgrade sftrace java-agent and python-agent completed"
 }
 
 upgrade_apm_agent()
 {
-if [ -d "$AGENTDIR" ]; then
-    if [ -f "$SERVICEFILE" ]; then
-        echo "Stop sfagent"
-        service sfagent stop
-    fi
-    ARCH=`uname -m`
-    echo "Backingup config.yaml and customer scripts"
-    cp -f $AGENTDIR/config.yaml _config_backup.yaml
-    #Creation of normalization dir to be removed in future once older agents are upgraded
-    mkdir -p $AGENTDIR/normalization
-    [ -f $AGENTDIR/normalization/config.yaml ] && cp $AGENTDIR/normalization/config.yaml _norm_config_backup.yaml
-    [ -f $AGENTDIR/mappings/custom_logging_plugins.yaml ] && cp $AGENTDIR/mappings/custom_logging_plugins.yaml _custom_logging_backup.yaml
-    [ -f $AGENTDIR/scripts/custom_scripts.lua ] && cp $AGENTDIR/scripts/custom_scripts.lua _custom_script_backup.yaml
-    rm -rf checksum* sfagent* mappings normalization
-    curl -sL $RELEASEURL \
-    | grep -w "browser_download_url" \
-    | cut -d":" -f 2,3 \
-    | tr -d '"' \
-    | xargs wget -q 
-    ls -l sfagent* checksum* >/dev/null
-    tar -zxvf sfagent*linux_$ARCH.tar.gz >/dev/null
-    mkdir -p $AGENTDIR/certs
-    mv -f sfagent $AGENTDIR
-    mv -f jolokia.jar $AGENTDIR
-    mv -f mappings/* $AGENTDIR/mappings/
-    mv -f scripts/* $AGENTDIR/scripts/
-    mv -f certs/* $AGENTDIR/certs/
-    mv -f normalization/* $AGENTDIR/normalization/
-    mv -f config.yaml.sample $AGENTDIR/config.yaml.sample
-    echo "Copying back config.yaml and customer scripts"
-    cp -f _config_backup.yaml $AGENTDIR/config.yaml
-    [ -f _norm_config_backup.yaml ] && yes | cp _norm_config_backup.yaml $AGENTDIR/normalization/config.yaml
-    [ -f _custom_logging_backup.yaml ] && yes | cp _custom_logging_backup.yaml $AGENTDIR/mappings/custom_logging_plugins.yaml
-    [ -f _custom_script_backup.yaml ] && yes | cp _custom_script_backup.yaml $AGENTDIR/scripts/custom_scripts.lua
-    chown -R root:root /opt/sfagent
-    if [ "$SYSTEM_TYPE" = "systemd" ]; then
-        create_sfagent_service
-    else
-        create_sfagent_init_script
-    fi
-    service sfagent restart
-    echo "Upgrading sfagent binaries completed"
-else
-    echo "directory $AGENTDIR doesn't exists"
-    install_apm_agent
-fi
+    buildinfo=$(curl -sk --connect-timeout 10 -m 30 $AGENT_BUILD_INFO_URL --cert $AGENT_CERT --key $AGENT_CERT_KEY | tr -d '{}' | tr -d '"')
+    logit "existing buildinfo $buildinfo"
 
+    if [ -d "$AGENTDIR" ]; then
+        if [ -f "$SERVICEFILE" ]; then
+            logit "stop sfagent service"
+            systemctl stop sfagent.service
+        fi
+        [ -d $AGENTDIR_BKP ] && logit "remove old backup directories $AGENTDIR_BKP" && rm -rf $AGENTDIR_BKP
+        logit "backup existing build"
+        cp -R $AGENTDIR $AGENTDIR_BKP
+        logit "backup config.yaml and customer scripts"
+        cp -f $AGENTDIR/config.yaml _config_backup.yaml
+        #Creation of normalization dir to be removed in future once older agents are upgraded
+        mkdir -p $AGENTDIR/normalization
+        [ -f $AGENTDIR/normalization/config.yaml ] && cp $AGENTDIR/normalization/config.yaml _norm_config_backup.yaml
+        [ -f $AGENTDIR/mappings/custom_logging_plugins.yaml ] && cp $AGENTDIR/mappings/custom_logging_plugins.yaml _custom_logging_backup.yaml
+        [ -f $AGENTDIR/scripts/custom_scripts.lua ] && cp $AGENTDIR/scripts/custom_scripts.lua _custom_script_backup.yaml
+        rm -rf checksum* sfagent* mappings normalization
+        logit "download latest sfagent release"
+        curl -sL $RELEASEURL \
+        | grep -w "browser_download_url" \
+        | cut -d":" -f 2,3 \
+        | tr -d '"' \
+        | xargs wget -q 
+        logit "download latest sfagent release done"
+        CHECKSUM=$(cat checksums.txt | grep $ARCH | sha256sum --check | grep OK)
+        if [ ${#CHECKSUM} != 0 ]; then
+            logit "checksum verification $CHECKSUM"
+            ls -l sfagent* checksum* >/dev/null
+            tar -zxvf sfagent*linux_$ARCH.tar.gz >/dev/null
+            mkdir -p $AGENTDIR/certs
+            mv -f sfagent $AGENTDIR
+            mv -f jolokia.jar $AGENTDIR
+            mv -f mappings/* $AGENTDIR/mappings/
+            mv -f scripts/* $AGENTDIR/scripts/
+            mv -f certs/* $AGENTDIR/certs/
+            mv -f normalization/* $AGENTDIR/normalization/
+            mv -f config.yaml.sample $AGENTDIR/config.yaml.sample
+            
+            logit "restore config.yaml and customer scripts"
+            cp -f _config_backup.yaml $AGENTDIR/config.yaml
+            [ -f _norm_config_backup.yaml ] && cp _norm_config_backup.yaml $AGENTDIR/normalization/config.yaml
+            [ -f _custom_logging_backup.yaml ] &&  cp _custom_logging_backup.yaml $AGENTDIR/mappings/custom_logging_plugins.yaml
+            [ -f _custom_script_backup.yaml ] && cp _custom_script_backup.yaml $AGENTDIR/scripts/custom_scripts.lua
+            chown -R root:root /opt/sfagent
+            # create service files
+            if [ "$SYSTEM_TYPE" = "systemd" ]; then
+                create_sfagent_service
+            else
+                create_sfagent_init_script
+            fi
+            # restart sfagent
+            if [ "$SYSTEM_TYPE" = "systemd" ]; then
+                systemctl restart sfagent.service
+            else
+                service sfagent restart
+            fi
+            # get agent status 
+            if [ "$SYSTEM_TYPE" = "systemd" ]; then
+                status=$(systemctl status sfagent.service)
+            else
+                status=$(service sfagent status)
+            fi
+            # revert to old build if agent is in failed state after upgrade
+            if [[ $status == *"failed"* ]] ;then
+                logit "upgarde sfagent failed"
+                rm -rf $AGENTDIR
+                mv $AGENTDIR_BKP $AGENTDIR
+                rm -rf /opt/td-agent-bit/bin
+                mv /opt/td-agent-bit/bin_bkp /opt/td-agent-bit/bin
+                # restart sfagent
+                if [ "$SYSTEM_TYPE" = "systemd" ]; then
+                    systemctl restart sfagent.service
+                else
+                    service sfagent restart
+                fi
+                logit "upgrade sfagent failed reverted to old release"
+                check_and_send_status "failed"
+            else
+                rm -rf $AGENTDIR_BKP
+                rm -rf /opt/td-agent-bit/bin_bkp
+                logit "upgrade sfagent completed"
+                check_and_send_status "success"
+            fi
+        else
+            logit "checksum verification failed $CHECKSUM"
+        fi
+    else
+        logit "directory $AGENTDIR not found, installing agent"
+        install_apm_agent
+    fi
 }
+
+check_and_send_status()
+{   
+    if [ -e /tmp/upgrade_status.json ]
+    then
+        logit "automated upgrade sending upgarde status"
+        status=$(curl -sk -o /dev/null --connect-timeout 10 -m 30 -w "%{http_code}" $AGENT_BUILD_INFO_URL --cert $AGENT_CERT --key $AGENT_CERT_KEY )
+        logit "sfagent running response code $status" 
+        if [ "$status" -eq "200" ]
+        then
+            sleep 5
+            buildinfo=$(curl -sk --connect-timeout 10 -m 30 $AGENT_BUILD_INFO_URL --cert $AGENT_CERT --key $AGENT_CERT_KEY | tr -d '{}' | tr -d '"')
+            logit "buildinfo $buildinfo"
+            sed -i "s/#STATUS/$1/g" /tmp/upgrade_status.json
+            sed -i "s/#MESSAGE/$buildinfo/g" /tmp/upgrade_status.json
+            sed -i "s/111122223333/$(($(date +%s%N)/1000000))/g" /tmp/upgrade_status.json
+            # send data to forwarder
+            response=$(curl -s --connect-timeout 10 -m 30 -XPOST -H "Accept: application/json" http://127.0.0.1:8588/ -d @/tmp/upgrade_status.json)
+            logit "upgrade command status sent $response"
+        else
+            logit "sfagent not running"
+        fi
+    fi
+}
+
 
 install_apm_agent()
 {
-    echo "                         "
-    echo "Install sfagent started"
-    ARCH=`uname -m`
     rm -rf checksum* sfagent* mappings normalization $AGENTDIR
+    logit "download latest sfagent release"
     curl -sL $RELEASEURL \
     | grep -w "browser_download_url" \
     | cut -d":" -f 2,3 \
     | tr -d '"' \
     | xargs wget -q
+    logit "download latest sfagent release done"
     ls -l sfagent* checksum* >/dev/null
+    CHECKSUM=$(cat checksums.txt | grep $ARCH | sha256sum --check | grep OK)
+    logit "checksum verification $CHECKSUM"
     tar -zxvf sfagent*linux_$ARCH.tar.gz >/dev/null
     mkdir -p $AGENTDIR
     mkdir -p $AGENTDIR/mappings
@@ -228,50 +318,51 @@ EOF
     else
         create_sfagent_init_script
     fi
-    service sfagent restart
-    echo "Install sfagent completed"
-    echo "                               "
+    # restart sfagent
+    if [ "$SYSTEM_TYPE" = "systemd" ]; then
+        systemctl restart sfagent.service
+    else
+        service sfagent restart
+    fi
+    logit "install sfagent completed"
 }
 
 check_jcmd_installation()
 {
-echo "                          "
-echo "Checking jcmd installation"
-if ! [ -x "$(command -v jcmd)" ]; then
-  echo "Warning: jcmd is not installed. Java applications will not be detected automatically"
-else
-  echo "jcmd is installed"
-fi
+    logit "checking jcmd installation"
+    if ! [ -x "$(command -v jcmd)" ]; then
+        logit "Warning: jcmd is not installed. Java applications will not be detected automatically"
+    else
+        logit "jcmd is installed"
+    fi
 }
 
 create_env_file()
 {
+    logit "create $AGENTDIR/env.conf file"
+    touch $AGENTDIR/env.conf
 
-echo "Create $AGENTDIR/env.conf file"
-touch $AGENTDIR/env.conf
+    if [ -n "$INCLUDE_PATHS" ];
+    then
+        logit "extra paths to include in PATH - $INCLUDE_PATHS"
+        IFS=","
+        for v in $INCLUDE_PATHS
+        do
+            DEFAULTPATH="$DEFAULTPATH:$v"
+        done
+    fi
+    logit "environment PATH=$DEFAULTPATH"
+    echo "PATH=$DEFAULTPATH" > $AGENTDIR/env.conf
 
-if [ ! -z "$INCLUDE_PATHS" ];
-then
-    echo "Extra paths to include in PATH - $INCLUDE_PATHS"
-    IFS=","
-    for v in $INCLUDE_PATHS
-    do
-        DEFAULTPATH="$DEFAULTPATH:$v"
-    done
-fi
-echo "Environment PATH=$DEFAULTPATH"
-echo "PATH=$DEFAULTPATH" > $AGENTDIR/env.conf
-
-if [ ! -z "$ENV_VARS" ]
-then
-    echo "Append env vars to $AGENTDIR/env.conf"
-    IFS=","
-    for v in $ENV_VARS
-    do
-        echo $v >> $AGENTDIR/env.conf
-    done
-fi
-
+    if [ -n "$ENV_VARS" ]
+    then
+        logit "append env vars to $AGENTDIR/env.conf"
+        IFS=","
+        for v in $ENV_VARS
+        do
+            echo $v >> $AGENTDIR/env.conf
+        done
+    fi
 }
 
 create_sfagent_service()
@@ -280,7 +371,7 @@ create_sfagent_service()
 # create env file 
 create_env_file
 
-echo "create sfagent service file"
+logit "create sfagent service"
 cat > "$SERVICEFILE" <<EOF
 [Unit]
 Description=snappyflow apm agent service
@@ -307,6 +398,7 @@ WantedBy=multi-user.target
 EOF
 
 systemctl daemon-reload
+logit "enable sfagent service"
 systemctl enable sfagent
 
 }
@@ -314,7 +406,7 @@ systemctl enable sfagent
 create_sfagent_init_script()
 {
 
-echo "create sfagent init.d file"
+logit "create sfagent init.d file"
 cat > "$INITFILE" <<'EOF'
 #!/bin/bash
 # sfagent daemon
@@ -382,7 +474,7 @@ status)
                         echo "Running"
                 fi
         else
-                printf "%s\n" "Service not running"
+                printf "%s\n" "Service not running failed"
         fi
 ;;
 stop)
@@ -413,7 +505,7 @@ esac
 EOF
 
 chmod +x "$INITFILE"
-echo "sfagent init script created"
+logit "sfagent init script created"
 }
 
 print_usage()
@@ -475,9 +567,9 @@ case $key in
 esac
 done
 
-if [ ! -z "$UNKNOWN" ]
+if [ -n "$UNKNOWN" ]
 then 
-    echo "ERROR: unknown arguments: $UNKNOWN"
+    logit "ERROR: unknown arguments: $UNKNOWN"
     print_usage
     exit 128
 fi
@@ -488,12 +580,12 @@ then
     exit 0
 fi
 
-oldpath=`pwd`
+oldpath=$(pwd)
 tmp_dir=$(mktemp -d -t installsfagent-XXXXXXXXXX)
-cd $tmp_dir
+cd "$tmp_dir"
 
 if [ "$EUID" -ne 0 ]; then
-    echo "Need to have root previlege to proceed with installation."
+    logit "Need root previlege to proceed with installation."
     exit 0
 fi
 
@@ -504,26 +596,26 @@ fi
 
 if [ "$SHOULD_UPGRADE" -eq 1 ];
 then
-    echo "Upgrading fluent-bit binary"
+    logit "upgrading fluent-bit"
     upgrade_fluent_bit
-    echo "Upgrading sfagent binaries"
+    logit "upgrading sfagent"
     upgrade_apm_agent
-    echo "Upgrading sftrace agent"
+    logit "upgrading sftrace agent"
     upgrade_sftrace_agent
 else
-    echo "Check jcmd installed"
+    logit "check jcmd installed"
     check_jcmd_installation
-    echo "Installing fluent-bit binary"
+    logit "installing fluent-bit"
     install_fluent_bit
-    echo "Installing APM agent"
+    logit "installing sfagent"
     install_apm_agent
-    echo "Installing sftrace agent"
+    logit "installing sftrace agent"
     install_sftrace_agent
 fi
 
-cd $oldpath
-rm -rf $tmp_dir
+cd "$oldpath"
+rm -rf "$tmp_dir"
 
 sleep 1
-echo "Done"
+logit "Done"
 exit 0
