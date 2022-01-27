@@ -118,7 +118,7 @@ upgrade_fluent_bit()
         | xargs wget -q 
         logit "download latest fluent-bit release done"
     else
-        logit "download censtos 6 build for fluent-bit"
+        logit "download centos 6 build for fluent-bit"
         wget -q $FLUENT_CENTOS_6_BUILD
         logit "download centos 6 fluent-bit release done"
     fi
@@ -268,6 +268,7 @@ check_and_send_status()
             sed -i "s/#STATUS/$1/g" /tmp/upgrade_status.json
             sed -i "s/#MESSAGE/$buildinfo/g" /tmp/upgrade_status.json
             sed -i "s/111122223333/$(($(date +%s%N)/1000000))/g" /tmp/upgrade_status.json
+            sed -i "s/111122224444/$(($(date +%s%N)/1000000))/g" /tmp/upgrade_status.json
             # send data to forwarder
             response=$(curl -s --connect-timeout 10 -m 30 -XPOST -H "Accept: application/json" http://127.0.0.1:8588/ -d @/tmp/upgrade_status.json)
             logit "upgrade command status sent $response"
