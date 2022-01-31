@@ -258,11 +258,14 @@ check_and_send_status()
     if [ -e /tmp/upgrade_status.json ]
     then
         logit "automated upgrade sending upgarde status"
+        while ! nc -z 127.0.0.1 8585; do
+            logit "wait for sfagent apiserver to accept connection"
+            sleep 5
+        done
         status=$(curl -sk -o /dev/null --connect-timeout 10 -m 30 -w "%{http_code}" $AGENT_BUILD_INFO_URL --cert $AGENT_CERT --key $AGENT_CERT_KEY )
         logit "sfagent running response code $status" 
         if [ "$status" -eq "200" ]
         then
-            sleep 5
             buildinfo=$(curl -sk --connect-timeout 10 -m 30 $AGENT_BUILD_INFO_URL --cert $AGENT_CERT --key $AGENT_CERT_KEY | tr -d '{}' | tr -d '"')
             logit "buildinfo $buildinfo"
             sed -i "s/#STATUS/$1/g" /tmp/upgrade_status.json
@@ -270,6 +273,10 @@ check_and_send_status()
             sed -i "s/111122223333/$(($(date +%s%N)/1000000))/g" /tmp/upgrade_status.json
             sed -i "s/111122224444/$(($(date +%s%N)/1000000))/g" /tmp/upgrade_status.json
             # send data to forwarder
+            while ! nc -z 127.0.0.1 8588; do
+                logit "wait for forwarder to accept connection"
+                sleep 5
+            done
             response=$(curl -s --connect-timeout 10 -m 30 -XPOST -H "Accept: application/json" http://127.0.0.1:8588/ -d @/tmp/upgrade_status.json)
             logit "upgrade command status sent $response"
         else
