@@ -15,7 +15,7 @@ FLUENT_CENTOS_6_BUILD="https://github.com/snappyflow/apm-agent/releases/download
 AGENTDIR="/opt/sfagent"
 AGENTDIR_BKP="/opt/sfagent_bkp"
 TDAGENTCONFDIR="/etc/td-agent-bit"
-ID=$(cat /etc/os-release | grep -w "ID" | cut -d"=" -f2 | tr -d '"')
+ID=$(grep -w "ID" /etc/os-release | cut -d"=" -f2 | tr -d '"')
 SERVICEFILE="/etc/systemd/system/sfagent.service"
 DEFAULTPATH="/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
 ENV_VARS=""
@@ -170,13 +170,14 @@ upgrade_apm_agent()
         [ -d $AGENTDIR_BKP ] && logit "remove old backup directories $AGENTDIR_BKP" && rm -rf $AGENTDIR_BKP
         logit "backup existing build"
         cp -R $AGENTDIR $AGENTDIR_BKP
-        logit "backup config.yaml and customer scripts"
-        cp -f $AGENTDIR/config.yaml _config_backup.yaml
+        logit "backup config.yaml, env.conf and customer scripts"
+        cp -f $AGENTDIR/config.yaml _config_backup.yaml && logit "backup $AGENTDIR/config.yaml"
         #Creation of normalization dir to be removed in future once older agents are upgraded
         mkdir -p $AGENTDIR/normalization
-        [ -f $AGENTDIR/normalization/config.yaml ] && cp $AGENTDIR/normalization/config.yaml _norm_config_backup.yaml
-        [ -f $AGENTDIR/mappings/custom_logging_plugins.yaml ] && cp $AGENTDIR/mappings/custom_logging_plugins.yaml _custom_logging_backup.yaml
-        [ -f $AGENTDIR/scripts/custom_scripts.lua ] && cp $AGENTDIR/scripts/custom_scripts.lua _custom_script_backup.yaml
+        [ -f $AGENTDIR/normalization/config.yaml ] && cp $AGENTDIR/normalization/config.yaml _norm_config_backup.yaml && logit "backup $AGENTDIR/normalization/config.yaml"
+        [ -f $AGENTDIR/mappings/custom_logging_plugins.yaml ] && cp $AGENTDIR/mappings/custom_logging_plugins.yaml _custom_logging_backup.yaml && logit "backup $AGENTDIR/mappings/custom_logging_plugins.yaml"
+        [ -f $AGENTDIR/scripts/custom_scripts.lua ] && cp $AGENTDIR/scripts/custom_scripts.lua _custom_script_backup.yaml && logit "backup $AGENTDIR/scripts/custom_scripts.lua"
+        [ -f $AGENTDIR/env.conf ] && cp $AGENTDIR/env.conf _env.conf && logit "backup $AGENTDIR/env.conf"
         rm -rf checksum* sfagent* mappings normalization
         logit "download latest sfagent release"
         curl -sL $RELEASEURL \
@@ -185,7 +186,7 @@ upgrade_apm_agent()
         | tr -d '"' \
         | xargs wget -q 
         logit "download latest sfagent release done"
-        CHECKSUM=$(cat checksums.txt | grep $ARCH | sha256sum --check | grep OK)
+        CHECKSUM=$(grep "$ARCH" checksums.txt | sha256sum --check | grep OK)
         if [ ${#CHECKSUM} != 0 ]; then
             logit "checksum verification $CHECKSUM"
             ls -l sfagent* checksum* >/dev/null
@@ -199,11 +200,12 @@ upgrade_apm_agent()
             mv -f normalization/* $AGENTDIR/normalization/
             mv -f config.yaml.sample $AGENTDIR/config.yaml.sample
             
-            logit "restore config.yaml and customer scripts"
-            cp -f _config_backup.yaml $AGENTDIR/config.yaml
-            [ -f _norm_config_backup.yaml ] && cp _norm_config_backup.yaml $AGENTDIR/normalization/config.yaml
-            [ -f _custom_logging_backup.yaml ] &&  cp _custom_logging_backup.yaml $AGENTDIR/mappings/custom_logging_plugins.yaml
-            [ -f _custom_script_backup.yaml ] && cp _custom_script_backup.yaml $AGENTDIR/scripts/custom_scripts.lua
+            logit "restore config.yaml, env.conf and customer scripts"
+            cp -f _config_backup.yaml $AGENTDIR/config.yaml && logit "restore $AGENTDIR/config.yaml"
+            [ -f _norm_config_backup.yaml ] && cp _norm_config_backup.yaml $AGENTDIR/normalization/config.yaml && logit "restore $AGENTDIR/normalization/config.yaml"
+            [ -f _custom_logging_backup.yaml ] &&  cp _custom_logging_backup.yaml $AGENTDIR/mappings/custom_logging_plugins.yaml && logit "restore $AGENTDIR/mappings/custom_logging_plugins.yaml"
+            [ -f _custom_script_backup.yaml ] && cp _custom_script_backup.yaml $AGENTDIR/scripts/custom_scripts.lua && logit "restore $AGENTDIR/scripts/custom_scripts.lua"
+            [ -f _env.conf ] && cp _env.conf $AGENTDIR/env.conf && logit "restore $AGENTDIR/env.conf"
             chown -R root:root /opt/sfagent
             # create service files
             if [ "$SYSTEM_TYPE" = "systemd" ]; then
@@ -212,6 +214,7 @@ upgrade_apm_agent()
                 create_sfagent_init_script
             fi
             # restart sfagent
+            logit "restart sfagent service"
             if [ "$SYSTEM_TYPE" = "systemd" ]; then
                 systemctl restart sfagent.service
             else
@@ -297,7 +300,7 @@ install_apm_agent()
     | xargs wget -q
     logit "download latest sfagent release done"
     ls -l sfagent* checksum* >/dev/null
-    CHECKSUM=$(cat checksums.txt | grep $ARCH | sha256sum --check | grep OK)
+    CHECKSUM=$(grep $ARCH checksums.txt | sha256sum --check | grep OK)
     logit "checksum verification $CHECKSUM"
     tar -zxvf sfagent*linux_$ARCH.tar.gz >/dev/null
     mkdir -p $AGENTDIR
@@ -319,7 +322,8 @@ logging:
 tags:
 key:
 EOF
-
+    # create env file 
+    create_env_file
     chown -R root:root /opt/sfagent
     if [ "$SYSTEM_TYPE" = "systemd" ]; then
         create_sfagent_service
@@ -375,9 +379,6 @@ create_env_file()
 
 create_sfagent_service()
 {
-
-# create env file 
-create_env_file
 
 logit "create sfagent service"
 cat > "$SERVICEFILE" <<EOF
