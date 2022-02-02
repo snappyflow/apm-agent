@@ -31,17 +31,20 @@ logit()
     echo "[$(date +%d/%m/%Y-%T)] - ${*}"
 }
 
+ensure_system_packages()
+{   
+    logit "install required system packages"
+    if [ "$ID" = "debian" ] || [ "$ID" = "ubuntu" ]; then
+        apt install -qy curl wget netcat logrotate &>/dev/null
+    fi
+    if [ "$ID" = "centos" ]; then
+        yum install -y curl wget nc logrotate &>/dev/null
+    fi
+}
+
 configure_logrotate_flb()
 {
     logit "configure logrotate for fluent-bit"
-    if [ "$ID" = "debian" ] || [ "$ID" = "ubuntu" ]; then
-        apt install -qy logrotate &>/dev/null
-    fi
-
-    if [ "$ID" = "centos" ]; then
-        yum install -y logrotate &>/dev/null
-    fi
-
     cat > /etc/logrotate.d/td-agent-bit << EOF
 /var/log/td-agent-bit.log {
 	daily
@@ -58,15 +61,7 @@ EOF
 
 
 install_fluent_bit()
-{
-    logit "install fluent-bit"
-    if [ "$ID" = "debian" ] || [ "$ID" = "ubuntu" ]; then
-         apt-get install -y -q wget curl
-    fi
-    if [ "$ID" = "centos" ]; then
-        yum install -y wget curl
-    fi
-    
+{    
     if [ "$SYSTEM_TYPE" = "systemd" ]; then
         logit "download latest fluent-bit release"
         curl -sL https://api.github.com/repos/snappyflow/apm-agent/releases?per_page=100 \
@@ -605,6 +600,7 @@ fi
 
 if [ "$SHOULD_UPGRADE" -eq 1 ];
 then
+    ensure_system_packages
     logit "upgrading fluent-bit"
     upgrade_fluent_bit
     logit "upgrading sfagent"
@@ -612,6 +608,7 @@ then
     logit "upgrading sftrace agent"
     upgrade_sftrace_agent
 else
+    ensure_system_packages
     logit "check jcmd installed"
     check_jcmd_installation
     logit "installing fluent-bit"
