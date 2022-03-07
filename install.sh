@@ -144,11 +144,11 @@ upgrade_sftrace_agent()
 {
     wget -q $SFTRACE_AGENT_x86_64
     logit "download latest sftrace agent done"
-    mv -f /opt/sfagent/sftrace/java/elasticapm.properties .
+    [ -f $AGENTDIR/sftrace/java/elasticapm.properties ] && mv -f /opt/sfagent/sftrace/java/elasticapm.properties .
     rm -rf /opt/sfagent/sftrace
     rm -rf /bin/sftrace
     tar -zxvf sftrace-agent.tar.gz >/dev/null && mv -f sftrace /opt/sfagent && mv -f /opt/sfagent/sftrace/sftrace /bin && mv -f /opt/sfagent/sftrace/java/sftrace /opt/sfagent/sftrace
-    mv -f elasticapm.properties /opt/sfagent/sftrace/java/
+    [ -f elasticapm.properties ] && mv -f elasticapm.properties /opt/sfagent/sftrace/java/
     logit "upgrade sftrace java-agent and python-agent completed"
 }
 
@@ -260,11 +260,11 @@ check_and_send_status()
             logit "wait for sfagent apiserver to accept connection"
             sleep 5
         done
-        status=$(curl -sk -o /dev/null --connect-timeout 10 -m 30 -w "%{http_code}" $AGENT_BUILD_INFO_URL --cert $AGENT_CERT --key $AGENT_CERT_KEY )
+        status=$(curl -sk -o /dev/null --connect-timeout 10 -m 30 -w "%{http_code}" $AGENT_BUILD_INFO_URL --cert $AGENT_CERT --key $AGENT_CERT_KEY --http1.1)
         logit "sfagent running response code $status" 
         if [ "$status" -eq "200" ]
         then
-            buildinfo=$(curl -sk --connect-timeout 10 -m 30 $AGENT_BUILD_INFO_URL --cert $AGENT_CERT --key $AGENT_CERT_KEY | tr -d '{}' | tr -d '"')
+            buildinfo=$(curl -sk --connect-timeout 10 -m 30 $AGENT_BUILD_INFO_URL --cert $AGENT_CERT --key $AGENT_CERT_KEY --http1.1 | tr -d '{}' | tr -d '"')
             logit "buildinfo $buildinfo"
             sed -i "s/#STATUS/$1/g" /tmp/upgrade_status.json
             sed -i "s/#MESSAGE/$buildinfo/g" /tmp/upgrade_status.json
