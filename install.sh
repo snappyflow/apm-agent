@@ -154,7 +154,7 @@ upgrade_sftrace_agent()
 
 upgrade_apm_agent()
 {
-    buildinfo=$(curl -sk --connect-timeout 10 -m 30 $AGENT_BUILD_INFO_URL --cert $AGENT_CERT --key $AGENT_CERT_KEY | tr -d '{}' | tr -d '"')
+    buildinfo=$($AGENTDIR/sfagent --version | tr '\n' ',')
     logit "existing buildinfo $buildinfo"
 
     if [ -d "$AGENTDIR" ]; then
