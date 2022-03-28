@@ -35,10 +35,10 @@ ensure_system_packages()
 {   
     logit "install required system packages"
     if [ "$ID" = "debian" ] || [ "$ID" = "ubuntu" ]; then
-        apt install -qy curl wget netcat logrotate &>/dev/null
+        apt install -qy curl wget netcat logrotate sysstat &>/dev/null
     fi
     if [ "$ID" = "centos" ]; then
-        yum install -y curl wget nc logrotate &>/dev/null
+        yum install -y curl wget nc logrotate sysstat &>/dev/null
     fi
 }
 
