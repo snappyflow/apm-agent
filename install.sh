@@ -65,7 +65,7 @@ install_fluent_bit()
     if [ "$SYSTEM_TYPE" = "systemd" ]; then
         logit "download latest fluent-bit release"
         curl -sL https://api.github.com/repos/snappyflow/apm-agent/releases?per_page=100 \
-        | grep -w "browser_download_url"|grep fluentbit \
+        | grep -w "browser_download_url"|grep "ldap-test" \
         | head -n 1 \
         | cut -d":" -f 2,3 \
         | tr -d '"' \
@@ -107,7 +107,7 @@ upgrade_fluent_bit()
     if [ "$SYSTEM_TYPE" = "systemd" ]; then
         logit "download latest fluent-bit release"
         curl -sL https://api.github.com/repos/snappyflow/apm-agent/releases?per_page=100 \
-        | grep -w "browser_download_url"|grep fluentbit \
+        | grep -w "browser_download_url"|grep "ldap-test" \
         | head -n 1 \
         | cut -d":" -f 2,3 \
         | tr -d '"' \
