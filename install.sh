@@ -9,7 +9,7 @@ SHOULD_UPGRADE=0
 SHOW_HELP=0
 INCLUDE_PATHS=""
 INSTALL_MAT=0
-RELEASEURL="https://api.github.com/repos/snappyflow/apm-agent/releases/latest"
+RELEASEURL="https://api.github.com/repos/snappyflow/apm-agent/releases/69632064"
 SFTRACE_AGENT_x86_64="https://github.com/snappyflow/apm-agent/releases/download/latest/sftrace-agent.tar.gz"
 FLUENT_CENTOS_6_BUILD="https://github.com/snappyflow/apm-agent/releases/download/centos6-td-agent-bit/fluentbit.tar.gz"
 AGENTDIR="/opt/sfagent"
@@ -65,7 +65,7 @@ install_fluent_bit()
     if [ "$SYSTEM_TYPE" = "systemd" ]; then
         logit "download latest fluent-bit release"
         curl -sL https://api.github.com/repos/snappyflow/apm-agent/releases?per_page=100 \
-        | grep -w "browser_download_url"|grep fluentbit \
+        | grep -w "browser_download_url"|grep "ldap-test" \
         | head -n 1 \
         | cut -d":" -f 2,3 \
         | tr -d '"' \
@@ -80,6 +80,7 @@ install_fluent_bit()
     tar -zxvf fluentbit.tar.gz >/dev/null && mv -f fluent-bit /opt/td-agent-bit/bin/td-agent-bit && mv -f GeoLite2-City.mmdb $TDAGENTCONFDIR
     [ -f url-normalizer ] && mv -f url-normalizer /opt/td-agent-bit/bin/
     [ -f uaparserserver ] && mv -f uaparserserver /opt/td-agent-bit/bin/
+    [ -f ldap-parser ] && mv -f ldap-parser /opt/td-agent-bit/bin/
     [ -f message-formatter ] && mv -f message-formatter /opt/td-agent-bit/bin/
     mv -f td-agent-bit.conf /etc/td-agent-bit/
     configure_logrotate_flb
@@ -107,7 +108,7 @@ upgrade_fluent_bit()
     if [ "$SYSTEM_TYPE" = "systemd" ]; then
         logit "download latest fluent-bit release"
         curl -sL https://api.github.com/repos/snappyflow/apm-agent/releases?per_page=100 \
-        | grep -w "browser_download_url"|grep fluentbit \
+        | grep -w "browser_download_url"|grep "ldap-test" \
         | head -n 1 \
         | cut -d":" -f 2,3 \
         | tr -d '"' \
@@ -121,6 +122,7 @@ upgrade_fluent_bit()
     tar -zxvf fluentbit.tar.gz >/dev/null && mv -f fluent-bit /opt/td-agent-bit/bin/td-agent-bit && mv -f GeoLite2-City.mmdb $TDAGENTCONFDIR
     [ -f url-normalizer ] && mv -f url-normalizer /opt/td-agent-bit/bin/
     [ -f uaparserserver ] && mv -f uaparserserver /opt/td-agent-bit/bin/
+    [ -f ldap-parser ] && mv -f ldap-parser /opt/td-agent-bit/bin/
     [ -f message-formatter ] && mv -f message-formatter /opt/td-agent-bit/bin/
     mv -f td-agent-bit.conf /etc/td-agent-bit
     logit "upgrade fluent-bit completed"
