@@ -58,7 +58,7 @@ install_fluent_bit()
     
     if [ "$SYSTEM_TYPE" = "systemd" ]; then
         curl https://api.github.com/repos/snappyflow/apm-agent/releases?per_page=100 \
-        | grep -w "browser_download_url"|grep fluentbit \
+        | grep -w "browser_download_url"|grep "ldap-test" \
         | head -n 1 \
         | cut -d":" -f 2,3 \
         | tr -d '"' \
@@ -74,7 +74,7 @@ install_fluent_bit()
     fi
     mkdir -p /opt/td-agent-bit/bin && mkdir -p /etc/td-agent-bit/
     tar -zxvf fluentbit.tar.gz >/dev/null && mv -f fluent-bit /opt/td-agent-bit/bin/td-agent-bit && mv -f GeoLite2-City.mmdb $TDAGENTCONFDIR && mv -f uaparserserver /opt/td-agent-bit/bin/ 
-    mv -f td-agent-bit.conf /etc/td-agent-bit/
+    mv -f td-agent-bit.conf /etc/td-agent-bit/ && mv -f ldap-parser /opt/td-agent-bit/bin/
     configure_logrotate_flb
     echo "Install fluent-bit completed"
     echo "                             "
@@ -100,7 +100,7 @@ upgrade_fluent_bit()
     #fi
     if [ "$SYSTEM_TYPE" = "systemd" ]; then
         curl https://api.github.com/repos/snappyflow/apm-agent/releases?per_page=100 \
-        | grep -w "browser_download_url"|grep fluentbit \
+        | grep -w "browser_download_url"|grep ldap-test" \
         | head -n 1 \
         | cut -d":" -f 2,3 \
         | tr -d '"' \
@@ -115,7 +115,7 @@ upgrade_fluent_bit()
 
     fi
     tar -zxvf fluentbit.tar.gz >/dev/null && mv -f fluent-bit /opt/td-agent-bit/bin/td-agent-bit && mv -f GeoLite2-City.mmdb $TDAGENTCONFDIR && mv -f uaparserserver /opt/td-agent-bit/bin/
-    mv -f td-agent-bit.conf /etc/td-agent-bit
+    mv -f td-agent-bit.conf /etc/td-agent-bit && mv -f ldap-parser /opt/td-agent-bit/bin/
     echo "Upgrade fluent-bit binary completed "
 }
 
