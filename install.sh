@@ -79,6 +79,7 @@ install_fluent_bit()
     mkdir -p /opt/td-agent-bit/bin && mkdir -p /etc/td-agent-bit/
     tar -zxvf fluentbit.tar.gz >/dev/null && mv -f fluent-bit /opt/td-agent-bit/bin/td-agent-bit && mv -f GeoLite2-City.mmdb $TDAGENTCONFDIR
     [ -f url-normalizer ] && mv -f url-normalizer /opt/td-agent-bit/bin/
+    [ -f ldap-parser ] && mv -f ldap-parser /opt/td-agent-bit/bin/
     [ -f uaparserserver ] && mv -f uaparserserver /opt/td-agent-bit/bin/
     [ -f message-formatter ] && mv -f message-formatter /opt/td-agent-bit/bin/
     mv -f td-agent-bit.conf /etc/td-agent-bit/
@@ -120,6 +121,7 @@ upgrade_fluent_bit()
     fi
     tar -zxvf fluentbit.tar.gz >/dev/null && mv -f fluent-bit /opt/td-agent-bit/bin/td-agent-bit && mv -f GeoLite2-City.mmdb $TDAGENTCONFDIR
     [ -f url-normalizer ] && mv -f url-normalizer /opt/td-agent-bit/bin/
+    [ -f ldap-parser ] && mv -f ldap-parser /opt/td-agent-bit/bin/
     [ -f uaparserserver ] && mv -f uaparserserver /opt/td-agent-bit/bin/
     [ -f message-formatter ] && mv -f message-formatter /opt/td-agent-bit/bin/
     mv -f td-agent-bit.conf /etc/td-agent-bit
