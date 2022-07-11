@@ -82,6 +82,7 @@ install_fluent_bit()
     [ -f ldap-parser ] && mv -f ldap-parser /opt/td-agent-bit/bin/
     [ -f uaparserserver ] && mv -f uaparserserver /opt/td-agent-bit/bin/
     [ -f message-formatter ] && mv -f message-formatter /opt/td-agent-bit/bin/
+    [ -f airflow-goals-parser ] && mv -f airflow-goals-parser /opt/td-agent-bit/bin/
     mv -f td-agent-bit.conf /etc/td-agent-bit/
     configure_logrotate_flb
     logit "install fluent-bit completed"
@@ -124,6 +125,7 @@ upgrade_fluent_bit()
     [ -f ldap-parser ] && mv -f ldap-parser /opt/td-agent-bit/bin/
     [ -f uaparserserver ] && mv -f uaparserserver /opt/td-agent-bit/bin/
     [ -f message-formatter ] && mv -f message-formatter /opt/td-agent-bit/bin/
+    [ -f airflow-goals-parser ] && mv -f airflow-goals-parser /opt/td-agent-bit/bin/
     mv -f td-agent-bit.conf /etc/td-agent-bit
     logit "upgrade fluent-bit completed"
 }
