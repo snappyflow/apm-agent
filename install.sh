@@ -193,11 +193,13 @@ upgrade_apm_agent()
             ls -l sfagent* checksum* >/dev/null
             tar -zxvf sfagent*linux_$ARCH.tar.gz >/dev/null
             mkdir -p $AGENTDIR/certs
+            mkdir -p $AGENTDIR/statsd_rules
             mv -f sfagent $AGENTDIR
             mv -f jolokia.jar $AGENTDIR
             mv -f mappings/* $AGENTDIR/mappings/
             mv -f scripts/* $AGENTDIR/scripts/
             mv -f certs/* $AGENTDIR/certs/
+            mv -f statsd/* $AGENTDIR/statsd_rules/
             mv -f normalization/* $AGENTDIR/normalization/
             mv -f config.yaml.sample $AGENTDIR/config.yaml.sample
             
@@ -309,12 +311,14 @@ install_apm_agent()
     mkdir -p $AGENTDIR/scripts
     mkdir -p $AGENTDIR/certs
     mkdir -p $AGENTDIR/normalization
+    mkdir -p $AGENTDIR/statsd_rules
     mv sfagent $AGENTDIR
     mv jolokia.jar $AGENTDIR
     mv mappings $AGENTDIR/.
     mv scripts $AGENTDIR/.
     mv certs $AGENTDIR/.
     mv normalization $AGENTDIR/.
+    mv statsd/* $AGENTDIR/statsd_rules
     mv config.yaml.sample $AGENTDIR/config.yaml.sample
     cat > $AGENTDIR/config.yaml <<EOF
 agent:
