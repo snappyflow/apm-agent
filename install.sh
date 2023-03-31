@@ -263,7 +263,7 @@ check_and_send_status()
     if [ -e /tmp/upgrade_status.json ]
     then
         logit "automated upgrade sending upgarde status"
-        status = $1
+        status=$1
         logit "sfagent running response code $status" 
         if [ "$status" -eq "success" ]
         then
