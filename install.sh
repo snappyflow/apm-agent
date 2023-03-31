@@ -22,7 +22,6 @@ ENV_VARS=""
 INITFILE="/etc/init.d/sfagent"
 ARCH=$(uname -m)
 SYSTEM_TYPE=$(ps --no-headers -o comm 1)
-AGENT_BUILD_INFO_URL="https://127.0.0.1:8585/buildinfo"
 AGENT_CERT="$AGENTDIR/certs/sfagent.pem"
 AGENT_CERT_KEY="$AGENTDIR/certs/sfagent-key.pem"
 
@@ -264,16 +263,12 @@ check_and_send_status()
     if [ -e /tmp/upgrade_status.json ]
     then
         logit "automated upgrade sending upgarde status"
-        while ! nc -z 127.0.0.1 8585; do
-            logit "wait for sfagent apiserver to accept connection"
-            sleep 5
-        done
-        status=$(curl -sk -o /dev/null --connect-timeout 10 -m 30 -w "%{http_code}" $AGENT_BUILD_INFO_URL --cert $AGENT_CERT --key $AGENT_CERT_KEY --http1.0)
+        status = $1
         logit "sfagent running response code $status" 
-        if [ "$status" -eq "200" ]
+        if [ "$status" -eq "success" ]
         then
-            buildinfo=$(curl -sk --connect-timeout 10 -m 30 $AGENT_BUILD_INFO_URL --cert $AGENT_CERT --key $AGENT_CERT_KEY --http1.0 | tr -d '{}' | tr -d '"')
-            logit "buildinfo $buildinfo"
+	    buildinfo=$($AGENTDIR/sfagent --version | tr '\n' ',')
+            logit "upgraded buildinfo $buildinfo"
             sed -i "s/#STATUS/$1/g" /tmp/upgrade_status.json
             sed -i "s/#MESSAGE/$buildinfo/g" /tmp/upgrade_status.json
             sed -i "s/111122223333/$(($(date +%s%N)/1000000))/g" /tmp/upgrade_status.json
