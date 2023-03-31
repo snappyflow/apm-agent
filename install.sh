@@ -265,7 +265,7 @@ check_and_send_status()
         logit "automated upgrade sending upgarde status"
         status=$1
         logit "sfagent running response code $status" 
-        if [ "$status" -eq "success" ]
+        if [ "$status" = "success" ]
         then
 	    buildinfo=$($AGENTDIR/sfagent --version | tr '\n' ',')
             logit "upgraded buildinfo $buildinfo"
