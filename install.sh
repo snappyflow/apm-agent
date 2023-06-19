@@ -30,14 +30,37 @@ logit()
     echo "[$(date +%d/%m/%Y-%T)] - ${*}"
 }
 
+check_nc_installation()
+{
+    command -v "$1" >/dev/null 2>&1
+}
+
 ensure_system_packages()
 {   
     logit "install required system packages"
     if [ "$ID" = "debian" ] || [ "$ID" = "ubuntu" ]; then
         apt install -qy curl wget netcat logrotate sysstat &>/dev/null
+        if [ check_nc_installation "netcat" -eq 0 ]; then
+            logit "netcat (nc) command is installed."
+        else
+            logit "installing netcat command"
+            apt install netcat &>/dev/null
+            if [ check_nc_installation "netcat" -ne 0 ]; then
+                logit "Unable to install netcat command. Please install it manually"
+            fi
+        fi
     fi
-    if [ "$ID" = "centos" ]; then
+    if [ "$ID" = "centos" ] || [ "$ID" = "amzn"]; then
         yum install -y curl wget nc logrotate sysstat &>/dev/null
+        if [ check_nc_installation "nc" -eq 0 ]; then
+            logit "netcat (nc) command is installed."
+        else
+            logit "installing netcat command"
+            yum install -y nc &>/dev/null
+            if [ check_nc_installation "nc" -ne 0 ]; then
+                logit "Unable to install nc command. Please install it manually"
+            fi
+        fi
     fi
 }
 
