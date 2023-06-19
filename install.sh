@@ -50,7 +50,7 @@ ensure_system_packages()
             fi
         fi
     fi
-    if [ "$ID" = "centos" ] || [ "$ID" = "amzn"]; then
+    if [ "$ID" = "centos" ] || [ "$ID" = "amzn" ]; then
         yum install -y curl wget nc logrotate sysstat &>/dev/null
         if [ check_nc_installation "nc" -eq 0 ]; then
             logit "netcat (nc) command is installed."
