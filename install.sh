@@ -40,24 +40,24 @@ ensure_system_packages()
     logit "install required system packages"
     if [ "$ID" = "debian" ] || [ "$ID" = "ubuntu" ]; then
         apt install -qy curl wget netcat logrotate sysstat &>/dev/null
-        if [ check_nc_installation "netcat" -eq 0 ]; then
+        if check_nc_installation "netcat"; then
             logit "netcat (nc) command is installed."
         else
             logit "installing netcat command"
             apt install netcat &>/dev/null
-            if [ check_nc_installation "netcat" -ne 0 ]; then
+            if check_nc_installation "netcat" ; then
                 logit "Unable to install netcat command. Please install it manually"
             fi
         fi
     fi
     if [ "$ID" = "centos" ] || [ "$ID" = "amzn" ]; then
         yum install -y curl wget nc logrotate sysstat &>/dev/null
-        if [ check_nc_installation "nc" -eq 0 ]; then
+        if check_nc_installation "nc"; then
             logit "netcat (nc) command is installed."
         else
             logit "installing netcat command"
             yum install -y nc &>/dev/null
-            if [ check_nc_installation "nc" -ne 0 ]; then
+            if check_nc_installation "nc" ; then
                 logit "Unable to install nc command. Please install it manually"
             fi
         fi
@@ -84,15 +84,24 @@ EOF
 
 install_fluent_bit()
 {    
-    if [ "$SYSTEM_TYPE" = "systemd" ]; then
-        logit "download latest fluent-bit release"
+    if [ "$SYSTEM_TYPE" = "systemd" ] &&  [ "$ARCH" != "aarch64" ] ; then
+        logit "download latest fluent-bit release $ARCH"
         curl -sL https://api.github.com/repos/snappyflow/apm-agent/releases?per_page=100 \
-        | grep -w "browser_download_url"|grep fluentbit \
+        | grep -w "browser_download_url"|grep fluentbit-amd \
         | head -n 1 \
         | cut -d":" -f 2,3 \
         | tr -d '"' \
         | xargs wget -q 
         logit "download latest fluent-bit release done"
+    elif [ "$SYSTEM_TYPE" = "systemd" ] && [ "$ARCH" = "aarch64" ]; then
+        logit "download latest fluent-bit release $ARCH"
+        curl -sL https://api.github.com/repos/snappyflow/apm-agent/releases?per_page=100 \
+        | grep -w "browser_download_url"|grep fluentbit-arm \
+        | head -n 1 \
+        | cut -d":" -f 2,3 \
+        | tr -d '"' \
+        | xargs wget -q 
+        logit "download latest arm64 fluent-bit release done"
     else
         logit "download centos 6 fluent-bit release"
         wget -q $FLUENT_CENTOS_6_BUILD
@@ -128,15 +137,24 @@ upgrade_fluent_bit()
     #fi
     [ -d /opt/td-agent-bit/bin_bkp ] && logit "remove old backup directories /opt/td-agent-bit/bin_bkp" && rm -rf /opt/td-agent-bit/bin_bkp
     cp -R /opt/td-agent-bit/bin /opt/td-agent-bit/bin_bkp
-    if [ "$SYSTEM_TYPE" = "systemd" ]; then
-        logit "download latest fluent-bit release"
+    if [ "$SYSTEM_TYPE" = "systemd" ] && [ "$ARCH" != "aarch64" ]; then
+        logit "download latest fluent-bit release for $ARCH"
         curl -sL https://api.github.com/repos/snappyflow/apm-agent/releases?per_page=100 \
-        | grep -w "browser_download_url"|grep fluentbit \
+        | grep -w "browser_download_url"|grep fluentbit-amd \
         | head -n 1 \
         | cut -d":" -f 2,3 \
         | tr -d '"' \
         | xargs wget -q 
         logit "download latest fluent-bit release done"
+    elif [ "$SYSTEM_TYPE" = "systemd" ] && [ "$ARCH" = "aarch64" ]; then
+        logit "download latest fluent-bit release for $ARCH"
+        curl -sL https://api.github.com/repos/snappyflow/apm-agent/releases?per_page=100 \
+        | grep -w "browser_download_url"|grep fluentbit-arm \
+        | head -n 1 \
+        | cut -d":" -f 2,3 \
+        | tr -d '"' \
+        | xargs wget -q 
+        logit "download latest arm64 fluent-bit release done"
     else
         logit "download centos 6 build for fluent-bit"
         wget -q $FLUENT_CENTOS_6_BUILD
