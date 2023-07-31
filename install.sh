@@ -56,21 +56,29 @@ install_fluent_bit()
         yum install -y wget curl
     fi
     
-    if [ "$SYSTEM_TYPE" = "systemd" ]; then
-        curl https://api.github.com/repos/snappyflow/apm-agent/releases?per_page=100 \
+    if [ "$SYSTEM_TYPE" = "systemd" ] && [ "$ARCH" != "aarch64" ]; then
+        curl https://api.github.com/repos/snappyflow/apm-agent/releases?per_page=500 \
         | grep -w "browser_download_url"|grep fluentbit \
         | head -n 1 \
         | cut -d":" -f 2,3 \
         | tr -d '"' \
-        | xargs wget -q 
+        | xargs wget -q
+    elif [ "$SYSTEM_TYPE" = "systemd" ] && [ "$ARCH" = "aarch64" ]; then
+        logit "download latest fluent-bit release for $ARCH"
+        curl -sL https://api.github.com/repos/snappyflow/apm-agent/releases?per_page=500 \
+        | grep -w "browser_download_url"|grep fluent-bit-arm \
+        | head -n 1 \
+        | cut -d":" -f 2,3 \
+        | tr -d '"' \
+        | xargs wget -q
+        logit "download latest arm64 fluent-bit release done"
     else
-        curl https://api.github.com/repos/snappyflow/apm-agent/releases?per_page=100 \
+        curl https://api.github.com/repos/snappyflow/apm-agent/releases?per_page=500 \
         | grep -w "browser_download_url"|grep centos6-td-agent-bit \
         | head -n 1 \
         | cut -d":" -f 2,3 \
         | tr -d '"' \
-        | xargs wget -q 
-
+        | xargs wget -q
     fi
     mkdir -p /opt/td-agent-bit/bin && mkdir -p /etc/td-agent-bit/
     tar -zxvf fluentbit.tar.gz >/dev/null && mv -f fluent-bit /opt/td-agent-bit/bin/td-agent-bit && mv -f GeoLite2-City.mmdb $TDAGENTCONFDIR && mv -f uaparserserver /opt/td-agent-bit/bin/ 
@@ -98,21 +106,29 @@ upgrade_fluent_bit()
     #    systemctl stop td-agent-bit
     #    systemctl disable td-agent-bit
     #fi
-    if [ "$SYSTEM_TYPE" = "systemd" ]; then
-        curl https://api.github.com/repos/snappyflow/apm-agent/releases?per_page=100 \
+    if [ "$SYSTEM_TYPE" = "systemd" ] && [ "$ARCH" != "aarch64" ]; then
+        curl https://api.github.com/repos/snappyflow/apm-agent/releases?per_page=500 \
         | grep -w "browser_download_url"|grep fluentbit \
         | head -n 1 \
         | cut -d":" -f 2,3 \
         | tr -d '"' \
-        | xargs wget -q 
+        | xargs wget -q
+    elif [ "$SYSTEM_TYPE" = "systemd" ] && [ "$ARCH" = "aarch64" ]; then
+        logit "download latest fluent-bit release for $ARCH"
+        curl -sL https://api.github.com/repos/snappyflow/apm-agent/releases?per_page=500 \
+        | grep -w "browser_download_url"|grep fluent-bit-arm \
+        | head -n 1 \
+        | cut -d":" -f 2,3 \
+        | tr -d '"' \
+        | xargs wget -q
+        logit "download latest arm64 fluent-bit release done"
     else
-        curl https://api.github.com/repos/snappyflow/apm-agent/releases?per_page=100 \
+        curl https://api.github.com/repos/snappyflow/apm-agent/releases?per_page=500 \
         | grep -w "browser_download_url"|grep centos6-td-agent-bit \
         | head -n 1 \
         | cut -d":" -f 2,3 \
         | tr -d '"' \
-        | xargs wget -q 
-
+        | xargs wget -q
     fi
     tar -zxvf fluentbit.tar.gz >/dev/null && mv -f fluent-bit /opt/td-agent-bit/bin/td-agent-bit && mv -f GeoLite2-City.mmdb $TDAGENTCONFDIR && mv -f uaparserserver /opt/td-agent-bit/bin/
     mv -f td-agent-bit.conf /etc/td-agent-bit
@@ -143,14 +159,18 @@ if [ -d "$AGENTDIR" ]; then
     cp -f $AGENTDIR/config.yaml _config_backup.yaml
     rm -rf checksum* sfagent* mappings
     
-    curl https://api.github.com/repos/snappyflow/apm-agent/releases?per_page=100 \
+    curl https://api.github.com/repos/snappyflow/apm-agent/releases?per_page=500 \
         | grep -w "browser_download_url"|grep master \
         | head -n 3 \
         | cut -d":" -f 2,3 \
         | tr -d '"' \
         | xargs wget -q
     ls -l sfagent* checksum* >/dev/null
-    tar -zxvf sfagent*linux_$ARCH.tar.gz >/dev/null
+    if [ $ARCH = "aarch64" ]; then
+		tar -zxvf sfagent*linux_arm64.tar.gz >/dev/null
+    else
+		tar -zxvf sfagent*linux_$ARCH.tar.gz >/dev/null
+	fi
     mkdir -p $AGENTDIR/certs
     mkdir -p $AGENTDIR/statsd_rules
     mv -f sfagent $AGENTDIR
@@ -183,14 +203,18 @@ install_apm_agent()
     echo "Install sfagent started"
     ARCH=`uname -m`
     rm -rf checksum* sfagent* mappings $AGENTDIR
-    curl https://api.github.com/repos/snappyflow/apm-agent/releases?per_page=100 \
+    curl https://api.github.com/repos/snappyflow/apm-agent/releases?per_page=500 \
         | grep -w "browser_download_url"|grep master \
         | head -n 3 \
         | cut -d":" -f 2,3 \
         | tr -d '"' \
         | xargs wget -q
     ls -l sfagent* checksum* >/dev/null
-    tar -zxvf sfagent*linux_$ARCH.tar.gz >/dev/null
+    if [ $ARCH = "aarch64" ]; then
+		tar -zxvf sfagent*linux_arm64.tar.gz >/dev/null
+    else
+		tar -zxvf sfagent*linux_$ARCH.tar.gz >/dev/null
+	fi
     mkdir -p $AGENTDIR
     mkdir -p $AGENTDIR/mappings
     mkdir -p $AGENTDIR/scripts
