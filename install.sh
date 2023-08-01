@@ -11,8 +11,8 @@ INCLUDE_PATHS=""
 INSTALL_MAT=0
 RELEASEURL="https://api.github.com/repos/snappyflow/apm-agent/releases/latest"
 SFTRACE_AGENT_x86_64="https://github.com/snappyflow/apm-agent/releases/download/latest/sftrace-agent.tar.gz"
-FLUENT_CENTOS_6_BUILD_AMD="https://github.com/snappyflow/apm-agent/releases/download/centos6-td-agent-bit/fluentbit.tar.gz"
-FLUENT_CENTOS_6_BUILD_ARM="https://github.com/snappyflow/apm-agent/releases/download/centos6-arm-td-agent-bit/fluentbit.tar.gz"
+FLUENT_CENTOS_6_BUILD="https://github.com/snappyflow/apm-agent/releases/download/centos6-td-agent-bit/fluentbit.tar.gz"
+
 
 AGENTDIR="/opt/sfagent"
 AGENTDIR_BKP="/opt/sfagent_bkp"
@@ -106,11 +106,7 @@ install_fluent_bit()
         logit "download latest arm64 fluent-bit release done"
     else
         logit "download centos 6 fluent-bit release"
-        if [ "$ARCH" = "aarch64"]; then
-            wget -q $FLUENT_CENTOS_6_BUILD_ARM
-        else
-            wget -q $FLUENT_CENTOS_6_BUILD_AMD
-        fi
+        wget -q $FLUENT_CENTOS_6_BUILD
         logit "download centos 6 fluent-bit release done"
     fi
     mkdir -p /opt/td-agent-bit/bin && mkdir -p /etc/td-agent-bit/
@@ -163,11 +159,7 @@ upgrade_fluent_bit()
         logit "download latest arm64 fluent-bit release done"
     else
         logit "download centos 6 build for fluent-bit"
-        if [ "$ARCH" = "aarch64"]; then
-            wget -q $FLUENT_CENTOS_6_BUILD_ARM
-        else
-            wget -q $FLUENT_CENTOS_6_BUILD_AMD
-        fi
+        wget -q $FLUENT_CENTOS_6_BUILD
         logit "download centos 6 fluent-bit release done"
     fi
     tar -zxvf fluentbit.tar.gz >/dev/null && mv -f fluent-bit /opt/td-agent-bit/bin/td-agent-bit && mv -f GeoLite2-City.mmdb $TDAGENTCONFDIR
