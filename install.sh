@@ -11,7 +11,9 @@ INCLUDE_PATHS=""
 INSTALL_MAT=0
 RELEASEURL="https://api.github.com/repos/snappyflow/apm-agent/releases/latest"
 SFTRACE_AGENT_x86_64="https://github.com/snappyflow/apm-agent/releases/download/latest/sftrace-agent.tar.gz"
-FLUENT_CENTOS_6_BUILD="https://github.com/snappyflow/apm-agent/releases/download/centos6-td-agent-bit/fluentbit.tar.gz"
+FLUENT_CENTOS_6_BUILD_AMD="https://github.com/snappyflow/apm-agent/releases/download/centos6-td-agent-bit/fluentbit.tar.gz"
+FLUENT_CENTOS_6_BUILD_ARM="https://github.com/snappyflow/apm-agent/releases/download/centos6-arm-td-agent-bit/fluentbit.tar.gz"
+
 AGENTDIR="/opt/sfagent"
 AGENTDIR_BKP="/opt/sfagent_bkp"
 TDAGENTCONFDIR="/etc/td-agent-bit"
@@ -87,7 +89,7 @@ install_fluent_bit()
     if [ "$SYSTEM_TYPE" = "systemd" ] &&  [ "$ARCH" != "aarch64" ] ; then
         logit "download latest fluent-bit release $ARCH"
         curl -sL https://api.github.com/repos/snappyflow/apm-agent/releases?per_page=500 \
-        | grep -w "browser_download_url"|grep fluentbit \
+        | grep -w "browser_download_url"|grep download/fluentbit \
         | head -n 1 \
         | cut -d":" -f 2,3 \
         | tr -d '"' \
@@ -96,7 +98,7 @@ install_fluent_bit()
     elif [ "$SYSTEM_TYPE" = "systemd" ] && [ "$ARCH" = "aarch64" ]; then
         logit "download latest fluent-bit release $ARCH"
         curl -sL https://api.github.com/repos/snappyflow/apm-agent/releases?per_page=500 \
-        | grep -w "browser_download_url"|grep fluent-bit-arm \
+        | grep -w "browser_download_url"|grep download/fluent-bit-arm \
         | head -n 1 \
         | cut -d":" -f 2,3 \
         | tr -d '"' \
@@ -104,7 +106,11 @@ install_fluent_bit()
         logit "download latest arm64 fluent-bit release done"
     else
         logit "download centos 6 fluent-bit release"
-        wget -q $FLUENT_CENTOS_6_BUILD
+        if [ "$ARCH" = "aarch64"]; then
+            wget -q $FLUENT_CENTOS_6_BUILD_ARM
+        else
+            wget -q $FLUENT_CENTOS_6_BUILD_AMD
+        fi
         logit "download centos 6 fluent-bit release done"
     fi
     mkdir -p /opt/td-agent-bit/bin && mkdir -p /etc/td-agent-bit/
@@ -140,7 +146,7 @@ upgrade_fluent_bit()
     if [ "$SYSTEM_TYPE" = "systemd" ] && [ "$ARCH" != "aarch64" ]; then
         logit "download latest fluent-bit release for $ARCH"
         curl -sL https://api.github.com/repos/snappyflow/apm-agent/releases?per_page=500 \
-        | grep -w "browser_download_url"|grep fluentbit \
+        | grep -w "browser_download_url"|grep download/fluentbit \
         | head -n 1 \
         | cut -d":" -f 2,3 \
         | tr -d '"' \
@@ -149,7 +155,7 @@ upgrade_fluent_bit()
     elif [ "$SYSTEM_TYPE" = "systemd" ] && [ "$ARCH" = "aarch64" ]; then
         logit "download latest fluent-bit release for $ARCH"
         curl -sL https://api.github.com/repos/snappyflow/apm-agent/releases?per_page=500 \
-        | grep -w "browser_download_url"|grep fluent-bit-arm \
+        | grep -w "browser_download_url"|grep download/fluent-bit-arm \
         | head -n 1 \
         | cut -d":" -f 2,3 \
         | tr -d '"' \
@@ -157,7 +163,11 @@ upgrade_fluent_bit()
         logit "download latest arm64 fluent-bit release done"
     else
         logit "download centos 6 build for fluent-bit"
-        wget -q $FLUENT_CENTOS_6_BUILD
+        if [ "$ARCH" = "aarch64"]; then
+            wget -q $FLUENT_CENTOS_6_BUILD_ARM
+        else
+            wget -q $FLUENT_CENTOS_6_BUILD_AMD
+        fi
         logit "download centos 6 fluent-bit release done"
     fi
     tar -zxvf fluentbit.tar.gz >/dev/null && mv -f fluent-bit /opt/td-agent-bit/bin/td-agent-bit && mv -f GeoLite2-City.mmdb $TDAGENTCONFDIR
