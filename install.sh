@@ -89,7 +89,7 @@ install_fluent_bit()
     if [ "$SYSTEM_TYPE" = "systemd" ] &&  [ "$ARCH" != "aarch64" ] ; then
         logit "download latest fluent-bit release $ARCH"
         curl -sL https://api.github.com/repos/snappyflow/apm-agent/releases?per_page=500 \
-        | grep -w "browser_download_url"|grep download/fluentbit \
+        | grep -w "browser_download_url"|grep "download/fluentbit" \
         | head -n 1 \
         | cut -d":" -f 2,3 \
         | tr -d '"' \
@@ -98,7 +98,7 @@ install_fluent_bit()
     elif [ "$SYSTEM_TYPE" = "systemd" ] && [ "$ARCH" = "aarch64" ]; then
         logit "download latest fluent-bit release $ARCH"
         curl -sL https://api.github.com/repos/snappyflow/apm-agent/releases?per_page=500 \
-        | grep -w "browser_download_url"|grep download/fluent-bit-arm \
+        | grep -w "browser_download_url"|grep "download/fluent-bit-arm" \
         | head -n 1 \
         | cut -d":" -f 2,3 \
         | tr -d '"' \
@@ -142,7 +142,7 @@ upgrade_fluent_bit()
     if [ "$SYSTEM_TYPE" = "systemd" ] && [ "$ARCH" != "aarch64" ]; then
         logit "download latest fluent-bit release for $ARCH"
         curl -sL https://api.github.com/repos/snappyflow/apm-agent/releases?per_page=500 \
-        | grep -w "browser_download_url"|grep download/fluentbit \
+        | grep -w "browser_download_url"|grep "download/fluentbit" \
         | head -n 1 \
         | cut -d":" -f 2,3 \
         | tr -d '"' \
@@ -151,7 +151,7 @@ upgrade_fluent_bit()
     elif [ "$SYSTEM_TYPE" = "systemd" ] && [ "$ARCH" = "aarch64" ]; then
         logit "download latest fluent-bit release for $ARCH"
         curl -sL https://api.github.com/repos/snappyflow/apm-agent/releases?per_page=500 \
-        | grep -w "browser_download_url"|grep download/fluent-bit-arm \
+        | grep -w "browser_download_url"|grep "download/fluent-bit-arm" \
         | head -n 1 \
         | cut -d":" -f 2,3 \
         | tr -d '"' \
