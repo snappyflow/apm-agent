@@ -96,14 +96,25 @@ install_fluent_bit()
         | xargs wget -q
         logit "download latest fluent-bit release done"
     elif [ "$SYSTEM_TYPE" = "systemd" ] && [ "$ARCH" = "aarch64" ]; then
-        logit "download latest fluent-bit release $ARCH"
-        curl -sL https://api.github.com/repos/snappyflow/apm-agent/releases?per_page=500 \
-        | grep -w "browser_download_url"|grep "download/fluent-bit-arm" \
-        | head -n 1 \
-        | cut -d":" -f 2,3 \
-        | tr -d '"' \
-        | xargs wget -q
-        logit "download latest arm64 fluent-bit release done"
+        source /etc/os-release
+        if [ "$VERSION_ID" = "22.04" ] ; then
+            curl -sL https://api.github.com/repos/snappyflow/apm-agent/releases?per_page=500 \
+            | grep -w "browser_download_url"|grep "download/ubuntu22-fluent-bit-arm" \
+            | head -n 1 \
+            | cut -d":" -f 2,3 \
+            | tr -d '"' \
+            | xargs wget -q
+            logit "download latest fluent-bit for ubuntu 22 release done"
+        else
+            logit "download latest fluent-bit release $ARCH"
+            curl -sL https://api.github.com/repos/snappyflow/apm-agent/releases?per_page=500 \
+            | grep -w "browser_download_url"|grep "download/fluent-bit-arm" \
+            | head -n 1 \
+            | cut -d":" -f 2,3 \
+            | tr -d '"' \
+            | xargs wget -q
+            logit "download latest arm64 fluent-bit release done"
+        fi
     else
         logit "download centos 6 fluent-bit release"
         wget -q $FLUENT_CENTOS_6_BUILD
@@ -149,14 +160,25 @@ upgrade_fluent_bit()
         | xargs wget -q
         logit "download latest fluent-bit release done"
     elif [ "$SYSTEM_TYPE" = "systemd" ] && [ "$ARCH" = "aarch64" ]; then
-        logit "download latest fluent-bit release for $ARCH"
-        curl -sL https://api.github.com/repos/snappyflow/apm-agent/releases?per_page=500 \
-        | grep -w "browser_download_url"|grep "download/fluent-bit-arm" \
-        | head -n 1 \
-        | cut -d":" -f 2,3 \
-        | tr -d '"' \
-        | xargs wget -q
-        logit "download latest arm64 fluent-bit release done"
+        source /etc/os-release
+        if [ "$VERSION_ID" = "22.04" ] ; then
+            curl -sL https://api.github.com/repos/snappyflow/apm-agent/releases?per_page=500 \
+            | grep -w "browser_download_url"|grep "download/ubuntu22-fluent-bit-arm" \
+            | head -n 1 \
+            | cut -d":" -f 2,3 \
+            | tr -d '"' \
+            | xargs wget -q
+            logit "download latest fluent-bit for ubuntu 22 arm release done"
+        else
+            logit "download latest fluent-bit release for $ARCH"
+            curl -sL https://api.github.com/repos/snappyflow/apm-agent/releases?per_page=500 \
+            | grep -w "browser_download_url"|grep "download/fluent-bit-arm" \
+            | head -n 1 \
+            | cut -d":" -f 2,3 \
+            | tr -d '"' \
+            | xargs wget -q
+            logit "download latest arm64 fluent-bit release done"
+        fi
     else
         logit "download centos 6 build for fluent-bit"
         wget -q $FLUENT_CENTOS_6_BUILD
